@@ -24,8 +24,6 @@ name_scope = "swa_model"
 # Hardcoded max board size
 pos_len = 19
 
-# Model ----------------------------------------------------------------
-
 with open(model_config_json) as f:
   model_config = json.load(f)
 
@@ -54,9 +52,6 @@ class GameState:
     self.board = Board(size=board_size)
     self.moves = []
     self.boards = [self.board.copy()]
-
-
-# Moves ----------------------------------------------------------------
 
 def fetch_output(session, gs, rules, fetches):
   bin_input_data = np.zeros(shape=[1]+model.bin_input_shape, dtype=np.float32)
@@ -278,3 +273,24 @@ def get_pass_alive(board, rules):
       loc = board.loc(x,y)
       locs_and_values.append((loc,area[loc]))
   return locs_and_values
+
+def main(session):
+  board_size = 19
+  gs = GameState(board_size)
+  rules = {
+    "koRule": "KO_POSITIONAL",
+    "scoringRule": "SCORING_AREA",
+    "taxRule": "TAX_NONE",
+    "multiStoneSuicideLegal": True,
+    "hasButton": False,
+    "encorePhase": 0,
+    "passWouldEndPhase": False,
+    "whiteKomi": 7.5
+  }
+  [value] = fetch_output(session, gs, rules, [value_output])
+  print(value)
+
+saver = tf.train.Saver(max_to_keep = 10000, save_relative_paths = True)
+with tf.Session() as session:
+  saver.restore(session, model_variables_prefix)
+  main(session)
