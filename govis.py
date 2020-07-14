@@ -525,46 +525,6 @@ def run_gtp(session):
 
   layer_command_lookup = dict()
 
-
-  def add_extra_board_size_visualizations(layer_name, layer, normalization_div):
-    assert(layer.shape[1].value == board_size)
-    assert(layer.shape[2].value == board_size)
-    num_channels = layer.shape[3].value
-    for i in range(num_channels):
-      command_name = layer_name + "-" + str(i)
-      command_name = command_name.replace("/",":")
-      known_commands.append(command_name)
-      known_analyze_commands.append("gfx/" + command_name + "/" + command_name)
-      layer_command_lookup[command_name.lower()] = (layer,i,normalization_div)
-
-  def add_layer_visualizations(layer_name, normalization_div):
-    if layer_name in layerdict:
-      layer = layerdict[layer_name]
-      add_extra_board_size_visualizations(layer_name, layer, normalization_div)
-
-  add_layer_visualizations("conv1",normalization_div=6)
-  add_layer_visualizations("rconv1",normalization_div=14)
-  add_layer_visualizations("rconv2",normalization_div=20)
-  add_layer_visualizations("rconv3",normalization_div=26)
-  add_layer_visualizations("rconv4",normalization_div=36)
-  add_layer_visualizations("rconv5",normalization_div=40)
-  add_layer_visualizations("rconv6",normalization_div=40)
-  add_layer_visualizations("rconv7",normalization_div=44)
-  add_layer_visualizations("rconv7/conv1a",normalization_div=12)
-  add_layer_visualizations("rconv7/conv1b",normalization_div=12)
-  add_layer_visualizations("rconv8",normalization_div=48)
-  add_layer_visualizations("rconv9",normalization_div=52)
-  add_layer_visualizations("rconv10",normalization_div=55)
-  add_layer_visualizations("rconv11",normalization_div=58)
-  add_layer_visualizations("rconv11/conv1a",normalization_div=12)
-  add_layer_visualizations("rconv11/conv1b",normalization_div=12)
-  add_layer_visualizations("rconv12",normalization_div=58)
-  add_layer_visualizations("rconv13",normalization_div=64)
-  add_layer_visualizations("rconv14",normalization_div=66)
-  add_layer_visualizations("g1",normalization_div=6)
-  add_layer_visualizations("p1",normalization_div=2)
-  add_layer_visualizations("v1",normalization_div=4)
-
   input_feature_command_lookup = dict()
   def add_input_feature_visualizations(layer_name, feature_idx, normalization_div):
     command_name = layer_name
@@ -599,7 +559,6 @@ def run_gtp(session):
     -linear,
     tf.zeros([19],dtype=tf.float32)
   ])
-  add_extra_board_size_visualizations("colorcalibration", tf.reshape(color_calibration,[1,19,19,1]),normalization_div=None)
 
   while True:
     try:
