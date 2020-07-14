@@ -17,20 +17,11 @@ from board import Board
 from model import Model
 import common
 
-description = """
-Play go with a trained neural net!
-Implements a basic GTP engine that uses the neural net directly to play moves.
-"""
+model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
+model_config_json = "nets/g170-b6c96-s175395328-d26788732/model.config.json"
+name_scope = "swa_model"
 
-parser = argparse.ArgumentParser(description=description)
-common.add_model_load_args(parser)
-parser.add_argument('-name-scope', help='Name scope for model variables', required=False)
-args = vars(parser.parse_args())
-
-(model_variables_prefix, model_config_json) = common.load_model_paths(args)
-name_scope = args["name_scope"]
-
-#Hardcoded max board size
+# Hardcoded max board size
 pos_len = 19
 
 # Model ----------------------------------------------------------------
