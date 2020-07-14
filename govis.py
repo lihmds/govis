@@ -445,65 +445,6 @@ def get_gfx_commands_for_heatmap(locs_and_values, board, normalization_div, is_p
   gfx_commands.append("TEXT " + ", ".join(texts_value + texts_rev + texts))
   return gfx_commands
 
-def print_scorebelief(gs,outputs):
-  board = gs.board
-  scorebelief = outputs["scorebelief"]
-  scoremean = outputs["scoremean"]
-  scorestdev = outputs["scorestdev"]
-  sbscale = outputs["sbscale"]
-
-  scorebelief = list(scorebelief)
-  if board.pla != Board.WHITE:
-    scorebelief.reverse()
-    scoremean = -scoremean
-
-  scoredistrmid = pos_len * pos_len + Model.EXTRA_SCORE_DISTR_RADIUS
-  ret = ""
-  ret += "TEXT "
-  ret += "SBScale: " + str(sbscale) + "\n"
-  ret += "ScoreBelief: \n"
-  for i in range(17,-1,-1):
-    ret += "TEXT "
-    ret += "%+6.1f" %(-(i*20+0.5))
-    for j in range(20):
-      idx = scoredistrmid-(i*20+j)-1
-      ret += " %4.0f" % (scorebelief[idx] * 10000)
-    ret += "\n"
-  for i in range(18):
-    ret += "TEXT "
-    ret += "%+6.1f" %((i*20+0.5))
-    for j in range(20):
-      idx = scoredistrmid+(i*20+j)
-      ret += " %4.0f" % (scorebelief[idx] * 10000)
-    ret += "\n"
-
-  beliefscore = 0
-  beliefscoresq = 0
-  beliefwin = 0
-  belieftotal = 0
-  for idx in range(scoredistrmid*2):
-    score = idx-scoredistrmid+0.5
-    if score > 0:
-      beliefwin += scorebelief[idx]
-    else:
-      beliefwin -= scorebelief[idx]
-    belieftotal += scorebelief[idx]
-    beliefscore += score*scorebelief[idx]
-    beliefscoresq += score*score*scorebelief[idx]
-
-  beliefscoremean = beliefscore/belieftotal
-  beliefscoremeansq = beliefscoresq/belieftotal
-  beliefscorevar = max(0,beliefscoremeansq-beliefscoremean*beliefscoremean)
-  beliefscorestdev = math.sqrt(beliefscorevar)
-
-  ret += "TEXT BeliefWin: %.2fc\n" % (100*beliefwin/belieftotal)
-  ret += "TEXT BeliefScoreMean: %.1f\n" % (beliefscoremean)
-  ret += "TEXT BeliefScoreStdev: %.1f\n" % (beliefscorestdev)
-  ret += "TEXT ScoreMean: %.1f\n" % (scoremean)
-  ret += "TEXT ScoreStdev: %.1f\n" % (scorestdev)
-  return ret
-
-
 # Basic parsing --------------------------------------------------------
 colstr = 'ABCDEFGHJKLMNOPQRST'
 def parse_coord(s,board):
@@ -548,7 +489,6 @@ def run_gtp(session):
     'futurepos1',
     'seki',
     'seki2',
-    'scorebelief',
     'passalive',
   ]
   known_analyze_commands = [
@@ -561,7 +501,6 @@ def run_gtp(session):
     'gfx/FuturePos1/futurepos1',
     'gfx/Seki/seki',
     'gfx/Seki2/seki2',
-    'gfx/ScoreBelief/scorebelief',
     'gfx/PassAlive/passalive',
   ]
 
@@ -792,10 +731,6 @@ def run_gtp(session):
       locs_and_values = get_pass_alive(gs.board, rules)
       gfx_commands = get_gfx_commands_for_heatmap(locs_and_values, gs.board, normalization_div=None, is_percent=False)
       ret = "\n".join(gfx_commands)
-
-    elif command[0] == "scorebelief":
-      outputs = get_outputs(session, gs, rules)
-      ret = print_scorebelief(gs,outputs)
 
     elif command[0] == "protocol_version":
       ret = '2'
