@@ -29,11 +29,9 @@ pos_len = 19
 with open(model_config_json) as f:
   model_config = json.load(f)
 
-if name_scope is not None:
-  with tf.compat.v1.variable_scope(name_scope):
-    model = Model(model_config,pos_len,{})
-else:
+with tf.compat.v1.variable_scope(name_scope):
   model = Model(model_config,pos_len,{})
+
 policy0_output = tf.nn.softmax(model.policy_output[:,:,0])
 policy1_output = tf.nn.softmax(model.policy_output[:,:,1])
 value_output = tf.nn.softmax(model.value_output)
