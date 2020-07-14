@@ -473,10 +473,6 @@ def run_gtp(session):
     'play',
     'genmove',
     'quit',
-    'name',
-    'version',
-    'known_command',
-    'list_commands',
     'protocol_version',
     'gogui-analyze_commands',
     'setrule',
@@ -605,14 +601,6 @@ def run_gtp(session):
       gs.boards.append(gs.board.copy())
       ret = str_coord(loc,gs.board)
 
-    elif command[0] == "name":
-      ret = 'KataGo Raw Neural Net Debug/Test Script'
-    elif command[0] == "version":
-      ret = '1.0'
-    elif command[0] == "list_commands":
-      ret = '\n'.join(known_commands)
-    elif command[0] == "known_command":
-      ret = 'true' if command[1] in known_commands else 'false'
     elif command[0] == "gogui-analyze_commands":
       ret = '\n'.join(known_analyze_commands)
     elif command[0] == "setrule":
