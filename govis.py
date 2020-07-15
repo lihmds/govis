@@ -287,7 +287,20 @@ def main(session):
     "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
-  [value] = fetch_output(session, gs, rules, [value_output])
+  fetches = [value_output]
+  bin_input_data = np.zeros(shape=[1]+model.bin_input_shape, dtype=np.float32)
+  global_input_data = np.zeros(shape=[1]+model.global_input_shape, dtype=np.float32)
+  pla = gs.board.pla
+  opp = Board.get_opp(pla)
+  move_index = len(gs.moves)
+  model.fill_row_features(gs.board,pla,opp,gs.boards,gs.moves,move_index,rules,bin_input_data,global_input_data,idx=0)
+  outputs = session.run(fetches, feed_dict={
+    model.bin_inputs: bin_input_data,
+    model.global_inputs: global_input_data,
+    model.symmetries: [False,False,False],
+    model.include_history: [[1.0,1.0,1.0,1.0,1.0]]
+  })
+  [[value]] = outputs
   print(value)
 
 saver = tf.train.Saver(max_to_keep = 10000, save_relative_paths = True)
