@@ -14,7 +14,6 @@ import tensorflow as tf
 import numpy as np
 from board import Board
 from model import Model
-import common
 
 def main():
   model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
