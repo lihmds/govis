@@ -30,13 +30,12 @@ def main():
     "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
-  board_size = 19
   channel_size = 19
-  board = Board(board_size)
-  model_config = read_config(model_config_path)
-  model = make_model(name_scope, channel_size, model_config)
+  board = Board(size = 19)
+  model = make_model(name_scope, channel_size, model_config_path)
+  # model.outputs_by_layer contains other outputs as an alternative to value_output
   value_output = tf.nn.softmax(model.value_output)
-  channel_input, global_input = generate_input(model, board, Board.BLACK, channel_size, rules, model_config)
+  channel_input, global_input = generate_input(model, board, Board.BLACK, channel_size, rules)
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
     outputs = session.run([value_output], feed_dict = {
@@ -46,16 +45,10 @@ def main():
       model.include_history: [[1.0,1.0,1.0,1.0,1.0]]
     })
     print(outputs)
-    # layer_name, layer = model.outputs_by_layer[3]
-    # print(layer_name)
-    # print(layer.shape)
-    # print(session.run(layer))
 
-def read_config(config_path):
+def make_model(name_scope, channel_size, config_path):
   with open(config_path) as f:
-    return json.load(f)
-
-def make_model(name_scope, channel_size, config):
+    config = json.load(f)
   with tf.compat.v1.variable_scope(name_scope):
     return Model(config, channel_size, {})
 

@@ -3,8 +3,8 @@ import tensorflow as tf
 import numpy as np
 from board import Board
 
-def generate_input(model, board, own_color, channel_size, rules, model_config):
-  assert(model_config['version'] == 8)
+def generate_input(model, board, own_color, channel_size, rules):
+  assert(model.version == 8)
   assert(board.size <= channel_size)
   assert(rules['encorePhase'] == 0)
   assert(rules['scoringRule'] == 'SCORING_AREA')
