@@ -1,0 +1,28 @@
+for models with model.version == 8:
+
+channel 0 is set to 1 at all valid board positions
+channel 1 is set to 1 at own stones
+channel 2 is set to 1 at the opponent's stones
+channels 3,4,5 are set to 1 at chains with 1,2,3 total liberties
+channel 6 is set to 1 where a ko forbids the move
+channels 7 and 8 are related to the encore
+channels 9-13 are set to 1 where the last five moves were played (if such a place exists)
+(channel 9 is the most recent)
+assumed: channels 14-16 describe ladderable stones 0,1,2 turns ago
+(i don't know if a turn means one or two moves)
+assumed: channel 17 are moves which start a successful ladder
+channels 18 and 19 describe pass-alive area for both players
+channels 20 and 21 are second encore phase starting stones
+globals 0-4 describe the last five moves (global 0 is the most recent)
+they are set to 1 if the move was a pass
+global 5 is the komi (from katago's perspective) scaled down by 20
+(no longer by 15 as 'Accelerating Self-Play Learning in Go' describes)
+globals 6 and 7 encode the ko ruleset
+global 8 encodes the suicide rule
+global 9 is set to 1 if territory scoring is used
+globals 10 and 11 encode the tax rule
+globals 12 and 13 describe the encore
+global 14 is set to 1 if a pass would end the phase
+assumed: globals 15 and 16 describe the playout doubling advantage
+global 17 is 1 if the 'button' from button go is available
+global 18 is parity information about the komi relative to the board

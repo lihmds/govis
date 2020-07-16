@@ -4,25 +4,23 @@ import numpy as np
 from board import Board
 
 class InputBuilder:
-  def build_whole_board_channel(self, channel, channel_size, board):
+  # f can return a number, or a bool to be converted
+  def build_channel_from_function(self, channel, channel_size, board, f):
     for y in range(board.size):
       for x in range(board.size):
         pos = xy_to_tensor_pos(x, y, channel_size)
-        channel[pos] = 1.0
+        location = board.loc(x, y)
+        channel[pos] = f(location)
+
+  def build_whole_board_channel(self, channel, channel_size, board):
+    self.build_channel_from_function(channel, channel_size, board, lambda _: True)
 
   def build_channel_of_color(self, channel, channel_size, board, color):
-    for y in range(board.size):
-      for x in range(board.size):
-        pos = xy_to_tensor_pos(x, y, channel_size)
-        if board.board[board.loc(x, y)] == color:
-          channel[pos] = 1.0
+    self.build_channel_from_function(channel, channel_size, board, lambda location: board.board[location] == color)
 
   def build_channel_of_liberties(self, channel, channel_size, board, number_of_liberties):
-    for y in range(board.size):
-      for x in range(board.size):
-        pos = xy_to_tensor_pos(x, y, channel_size)
-        if board.num_liberties(board.loc(x, y)) == number_of_liberties:
-          channel[pos] = 1.0
+    self.build_channel_from_function(channel, channel_size, board, lambda location:
+                                     board.num_liberties(location) == number_of_liberties)
 
   def build(self, model, board, own_color, channel_size, rules):
     assert(model.version == 8)
@@ -34,56 +32,24 @@ class InputBuilder:
     assert(rules['passWouldEndPhase'] == False)
 
     num_channel_input_features = 22
-    channel_input_shape = [channel_size * channel_size, num_channel_input_features]
-    channel_input = np.zeros(shape = channel_input_shape, dtype = np.float32)
+    channel_input = np.zeros(shape = [channel_size * channel_size, num_channel_input_features], dtype = np.float32)
 
     num_global_input_features = 19
-    global_input_shape = [num_global_input_features]
-    global_input = np.zeros(shape = global_input_shape, dtype = np.float32)
+    global_input = np.zeros(shape = [num_global_input_features], dtype = np.float32)
 
     opponent_color = Board.get_opp(own_color)
+    white_komi = rules['whiteKomi']
+    own_komi = (white_komi if own_color == Board.WHITE else -white_komi)
+
     self.build_whole_board_channel(channel_input[:,0], channel_size, board)
     self.build_channel_of_color(channel_input[:,1], channel_size, board, own_color)
     self.build_channel_of_color(channel_input[:,2], channel_size, board, opponent_color)
     self.build_channel_of_liberties(channel_input[:,3], channel_size, board, 1)
     self.build_channel_of_liberties(channel_input[:,4], channel_size, board, 2)
     self.build_channel_of_liberties(channel_input[:,5], channel_size, board, 3)
-
-    # channel 6 is set to 1 where a ko forbids the move
-    # channels 7 and 8 are related to the encore
-    # channels 9-13 are set to 1 where the last five moves were played (if such a place exists)
-    # (channel 9 is the most recent)
-    # assumed: channels 14-16 describe ladderable stones 0,1,2 turns ago
-    # (i don't know if a turn means one or two moves)
-    # assumed: channel 17 are moves which start a successful ladder
-    # channels 18 and 19 describe pass-alive alive for both players
-    # channels 20 and 21 are second encore phase starting stones
-
-    board_area = board.size * board.size
-    white_komi = rules['whiteKomi']
-    self_komi = (white_komi if own_color == Board.WHITE else -white_komi)
-
-    # globals 0-4 describe the last five moves
-    # (global 0 is the most recent)
-    # they are set to 1 if the move was a pass
-
-    # global 5 is the komi (from katago's perspective) scaled down by 20
-    # (no longer by 15 as 'Accelerating Self-Play Learning in Go' describes)
-    global_input[5] = self_komi / 20.0
-
-    # globals 6 and 7 encode the ko ruleset
-    # global 8 encodes the suicide rule
-    if rules['multiStoneSuicideLegal']:
-      global_input[8] = 1.0
-
-    # global 9 is set to 1 if territory scoring is used
-    # globals 10 and 11 encode the tax rule
-    # globals 12 and 13 describe the encore
-    # global 14 is set to 1 if a pass would end the phase
-    # asssumed: globals 15 and 16 describe the playout doubling advantage
-    # global 17 is 1 if the 'button' from button go is available
-    # global 18 is parity information about the komi relative to the board
-    global_input[18] = self.komi_sawtooth_wave(board, self_komi)
+    global_input[5] = own_komi / 20.0
+    global_input[8] = rules['multiStoneSuicideLegal']
+    global_input[18] = self.komi_sawtooth_wave(board, own_komi)
     return prepend_dimension(channel_input), prepend_dimension(global_input)
 
   def komi_sawtooth_wave(self, board, self_komi):
