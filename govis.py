@@ -14,15 +14,14 @@ import tensorflow as tf
 import numpy as np
 from board import Board
 from model import Model
+from input import generate_input
 
 def main():
   model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
   model_config_path = "nets/g170-b6c96-s175395328-d26788732/model.config.json"
   name_scope = "swa_model"
-  board_size = 19
-  gs = GameState(board_size)
   rules = {
-    "koRule": "KO_POSITIONAL",
+    "koRule": "KO_SIMPLE",
     "scoringRule": "SCORING_AREA",
     "taxRule": "TAX_NONE",
     "multiStoneSuicideLegal": True,
@@ -31,44 +30,37 @@ def main():
     "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
-  model = make_model(name_scope, model_config_path)
+  board_size = 19
+  channel_size = 19
+  board = Board(board_size)
+  model_config = read_config(model_config_path)
+  model = make_model(name_scope, channel_size, model_config)
   value_output = tf.nn.softmax(model.value_output)
+  channel_input, global_input = generate_input(model, board, Board.BLACK, channel_size, rules, model_config)
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
-    value = fetch_output(value_output, model, rules, gs, session)
-  print(value)
+    outputs = session.run([value_output], feed_dict = {
+      model.bin_inputs: channel_input,
+      model.global_inputs: global_input,
+      model.symmetries: [False,False,False],
+      model.include_history: [[1.0,1.0,1.0,1.0,1.0]]
+    })
+    print(outputs)
+    # layer_name, layer = model.outputs_by_layer[3]
+    # print(layer_name)
+    # print(layer.shape)
+    # print(session.run(layer))
 
-def make_model(name_scope, config_path):
-  max_board_size = 19
+def read_config(config_path):
   with open(config_path) as f:
-    config = json.load(f)
+    return json.load(f)
+
+def make_model(name_scope, channel_size, config):
   with tf.compat.v1.variable_scope(name_scope):
-    return Model(config, max_board_size, {})
+    return Model(config, channel_size, {})
 
 def restore_session(session, model_variables_prefix):
   saver = tf.train.Saver(max_to_keep = 10000, save_relative_paths = True)
   saver.restore(session, model_variables_prefix)
-
-def fetch_output(output, model, rules, gs, session):
-  bin_input_data = np.zeros(shape = [1] + model.bin_input_shape, dtype = np.float32)
-  global_input_data = np.zeros(shape = [1] + model.global_input_shape, dtype = np.float32)
-  pla = gs.board.pla
-  opp = Board.get_opp(pla)
-  move_index = len(gs.moves)
-  model.fill_row_features(gs.board, pla, opp, gs.boards, gs.moves, move_index, rules, bin_input_data, global_input_data, idx = 0)
-  outputs = session.run([output], feed_dict = {
-    model.bin_inputs: bin_input_data,
-    model.global_inputs: global_input_data,
-    model.symmetries: [False,False,False],
-    model.include_history: [[1.0,1.0,1.0,1.0,1.0]]
-  })
-  return outputs[0][0]
-
-class GameState:
-  def __init__(self,board_size):
-    self.board_size = board_size
-    self.board = Board(size = board_size)
-    self.moves = []
-    self.boards = [self.board.copy()]
 
 main()
