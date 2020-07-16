@@ -14,7 +14,7 @@ import tensorflow as tf
 import numpy as np
 from board import Board
 from model import Model
-from input import generate_input
+from input import InputBuilder
 
 def main():
   model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
@@ -35,7 +35,8 @@ def main():
   model = make_model(name_scope, channel_size, model_config_path)
   # model.outputs_by_layer contains other outputs as an alternative to value_output
   value_output = tf.nn.softmax(model.value_output)
-  channel_input, global_input = generate_input(model, board, Board.BLACK, channel_size, rules)
+  input_builder = InputBuilder()
+  channel_input, global_input = input_builder.build(model, board, Board.BLACK, channel_size, rules)
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
     outputs = session.run([value_output], feed_dict = {
