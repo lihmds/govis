@@ -9,7 +9,19 @@ class Board:
   WHITE = 2
   WALL = 3
 
+  ZOBRIST_STONE = [[],[],[],[]]
+  ZOBRIST_PLA = []
+
+  ZOBRIST_RAND = random.Random()
+  ZOBRIST_RAND.seed(123987456)
+
   PASS_LOC = 0
+
+  for i in range((19+1)*(19+2)+1):
+    ZOBRIST_STONE[BLACK].append(ZOBRIST_RAND.getrandbits(64))
+    ZOBRIST_STONE[WHITE].append(ZOBRIST_RAND.getrandbits(64))
+  for i in range(4):
+    ZOBRIST_PLA.append(ZOBRIST_RAND.getrandbits(64))
 
   def __init__(self,size,copy_other=None):
     if size < 2 or size > 39:
@@ -28,6 +40,7 @@ class Board:
       self.group_liberty_count = np.copy(copy_other.group_liberty_count)
       self.group_next = np.copy(copy_other.group_next)
       self.group_prev = np.copy(copy_other.group_prev)
+      self.zobrist = copy_other.zobrist
       self.simple_ko_point = copy_other.simple_ko_point
     else:
       self.pla = Board.BLACK
@@ -37,6 +50,7 @@ class Board:
       self.group_liberty_count = np.zeros(shape=(self.arrsize), dtype=np.int16)
       self.group_next = np.zeros(shape=(self.arrsize), dtype=np.int16)
       self.group_prev = np.zeros(shape=(self.arrsize), dtype=np.int16)
+      self.zobrist = 0
       self.simple_ko_point = None
 
       for i in range(-1,size+1):
@@ -69,6 +83,11 @@ class Board:
 
   def is_adjacent(self,loc1,loc2):
     return loc1 == loc2 + self.adj[0] or loc1 == loc2 + self.adj[1] or loc1 == loc2 + self.adj[2] or loc1 == loc2 + self.adj[3]
+
+  def pos_zobrist(self):
+    return self.zobrist
+  def sit_zobrist(self):
+    return self.zobrist ^ Board.ZOBRIST_PLA[self.pla]
 
   def num_liberties(self,loc):
     if self.board[loc] == Board.EMPTY or self.board[loc] == Board.WALL:
@@ -352,6 +371,7 @@ class Board:
       self.floodFillStones(pla,loc)
 
     #Delete the stone played here.
+    self.zobrist ^= Board.ZOBRIST_STONE[pla][loc]
     self.board[loc] = Board.EMPTY
 
     #Zero out stuff in preparation for rebuilding
@@ -404,6 +424,7 @@ class Board:
   #to tailTarget, and returns the head of the list. The tail is guaranteed to be loc.
   def floodFillStonesHelper(self, head, tailTarget, loc, pla):
     self.board[loc] = pla
+    self.zobrist ^= Board.ZOBRIST_STONE[pla][loc]
 
     self.group_head[loc] = head
     self.group_stone_count[head] += 1
@@ -469,6 +490,7 @@ class Board:
 
     #Put the stone down
     self.board[loc] = pla
+    self.zobrist ^= Board.ZOBRIST_STONE[pla][loc]
 
     #Initialize the group for that stone
     self.group_head[loc] = loc
@@ -682,6 +704,7 @@ class Board:
 
       #Zero out all the stuff
       self.board[loc] = Board.EMPTY
+      self.zobrist ^= Board.ZOBRIST_STONE[opp][loc]
       self.group_head[loc] = 0
       self.group_next[loc] = 0
       self.group_prev[loc] = 0
