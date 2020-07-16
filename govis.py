@@ -33,9 +33,9 @@ def main():
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
     print('1.00 says:')
-    print(net_output_for_board(session, InputBuilder(), model, board, Board.BLACK, channel_size, rules, value_output))
+    print(apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, channel_size, rules, value_output))
     print('0.90 says:')
-    print(net_output_for_board(session, FractionalInputBuilder(0.9), model, board, Board.BLACK, channel_size, rules, value_output))
+    print(apply_net_to_board(session, FractionalInputBuilder(0.9), model, board, Board.BLACK, channel_size, rules, value_output))
 
 def generate_board(size):
   board = Board(size)
@@ -48,11 +48,11 @@ def generate_board(size):
           board.play(player, location)
   return board
 
-def net_output_for_board(session, input_builder, model, board, own_color, channel_size, rules, output):
+def apply_net_to_board(session, input_builder, model, board, own_color, channel_size, rules, output):
   channel_input, global_input = input_builder.build(model, board, own_color, channel_size, rules)
-  return apply_net(session, model, channel_input, global_input, output)
+  return apply_net_to_inputs(session, model, channel_input, global_input, output)
 
-def apply_net(session, model, channel_input, global_input, output):
+def apply_net_to_inputs(session, model, channel_input, global_input, output):
   return session.run([output], feed_dict = {
     model.bin_inputs: channel_input,
     model.global_inputs: global_input,
