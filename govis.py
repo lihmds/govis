@@ -24,12 +24,15 @@ def main():
   board_size = 19
   channel_size = 19
   model = make_model(name_scope, channel_size, model_config_path)
-  winrate = get_winrate(model)
+  layer_name, layer = random.choice(model.outputs_by_layer)
+  print(layer_name)
+  neuron = layer[0, 0, 0, 0]
+
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
-    def compute_winrate(board, truth_value):
-      return apply_net_to_board(session, FractionalInputBuilder(truth_value), model, board, Board.BLACK, rules, winrate)
-    plot_against_truth_value(compute_winrate, board_size, 5)
+    def compute_activation(board, truth_value):
+      return apply_net_to_board(session, FractionalInputBuilder(truth_value), model, board, Board.BLACK, rules, neuron)
+    plot_against_truth_value(compute_activation, board_size, 5)
 
 def plot_against_truth_value(f, board_size, plot_count):
   truth_values = np.linspace(0.0, 1.0)
@@ -42,10 +45,6 @@ def plot_against_truth_value(f, board_size, plot_count):
     outputs = list(map(lambda truth_value: f(board, truth_value), truth_values))
     axes.plot(truth_values, outputs)
   plot.show()
-
-def get_winrate(model):
-  value_output = tf.nn.softmax(model.value_output)
-  return value_output[0,0]
 
 def generate_board(size):
   board = Board(size)
@@ -60,7 +59,7 @@ def generate_board(size):
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
   channel_input, global_input = input_builder.build(model, board, own_color, rules)
-  return session.run([output], feed_dict = {
+  return session.run(output, feed_dict = {
     model.bin_inputs: channel_input,
     model.global_inputs: global_input,
     model.symmetries: [False, False, False],
