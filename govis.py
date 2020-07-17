@@ -1,5 +1,7 @@
 import random
 import json
+import matplotlib.pyplot as plot
+import numpy as np
 import tensorflow as tf
 from board import Board
 from model import Model
@@ -17,20 +19,27 @@ def main():
     "hasButton": False,
     "encorePhase": 0,
     "passWouldEndPhase": False,
-    "whiteKomi": 0.5
+    "whiteKomi": 7.5
   }
   channel_size = 19
   board = generate_board(19)
   model = make_model(name_scope, channel_size, model_config_path)
   # model.outputs_by_layer contains alternatives to value_output
   value_output = tf.nn.softmax(model.value_output)
+  winrate = value_output[0,0]
 
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
-    print('1.00 says:')
-    print(apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, channel_size, rules, value_output))
-    print('0.90 says:')
-    print(apply_net_to_board(session, FractionalInputBuilder(0.9), model, board, Board.BLACK, channel_size, rules, value_output))
+    truth_values = np.linspace(0.0, 1.0)
+    winrates = list(map(lambda p: apply_net_to_board(session, FractionalInputBuilder(p), model, board, Board.BLACK,
+                                                     channel_size, rules, winrate), truth_values))
+    _, axes = plot.subplots()
+    axes.set_xlim(left = -0.1, right = 1.1)
+    axes.set_ylim(bottom = -0.1, top = 1.1)
+    axes.plot(truth_values, winrates)
+    axes.set(xlabel = 'truth value (1 is normal)', ylabel = 'winrate', title='here goes the title')
+    axes.grid()
+    plot.show()
 
 def generate_board(size):
   board = Board(size)
