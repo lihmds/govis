@@ -1,5 +1,7 @@
 import random
 import json
+import matplotlib.pyplot as plot
+import numpy as np
 import tensorflow as tf
 from board import Board
 from model import Model
@@ -17,20 +19,32 @@ def main():
     "hasButton": False,
     "encorePhase": 0,
     "passWouldEndPhase": False,
-    "whiteKomi": 0.5
+    "whiteKomi": 7.5
   }
+  board_size = 19
   channel_size = 19
-  board = generate_board(19)
   model = make_model(name_scope, channel_size, model_config_path)
-  # model.outputs_by_layer contains alternatives to value_output
-  value_output = tf.nn.softmax(model.value_output)
+  layer_name, layer = random.choice(model.outputs_by_layer)
+  print(layer_name)
+  neuron = layer[0, 0, 0, 0]
 
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
-    print('1.00 says:')
-    print(apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, channel_size, rules, value_output))
-    print('0.90 says:')
-    print(apply_net_to_board(session, FractionalInputBuilder(0.9), model, board, Board.BLACK, channel_size, rules, value_output))
+    def compute_activation(board, truth_value):
+      return apply_net_to_board(session, FractionalInputBuilder(truth_value), model, board, Board.BLACK, rules, neuron)
+    plot_against_truth_value(compute_activation, board_size, 5)
+
+def plot_against_truth_value(f, board_size, plot_count):
+  truth_values = np.linspace(0.0, 1.0)
+  _, axes = plot.subplots()
+  axes.set(xlabel = 'truth value', ylabel = 'output')
+  axes.margins(0.1)
+  axes.grid()
+  for _ in range(plot_count):
+    board = generate_board(board_size)
+    outputs = list(map(lambda truth_value: f(board, truth_value), truth_values))
+    axes.plot(truth_values, outputs)
+  plot.show()
 
 def generate_board(size):
   board = Board(size)
@@ -43,12 +57,9 @@ def generate_board(size):
           board.play(player, location)
   return board
 
-def apply_net_to_board(session, input_builder, model, board, own_color, channel_size, rules, output):
-  channel_input, global_input = input_builder.build(model, board, own_color, channel_size, rules)
-  return apply_net_to_inputs(session, model, channel_input, global_input, output)
-
-def apply_net_to_inputs(session, model, channel_input, global_input, output):
-  return session.run([output], feed_dict = {
+def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
+  channel_input, global_input = input_builder.build(model, board, own_color, rules)
+  return session.run(output, feed_dict = {
     model.bin_inputs: channel_input,
     model.global_inputs: global_input,
     model.symmetries: [False, False, False],
