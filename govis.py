@@ -21,25 +21,31 @@ def main():
     "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
+  board_size = 19
   channel_size = 19
-  board = generate_board(19)
   model = make_model(name_scope, channel_size, model_config_path)
-  # model.outputs_by_layer contains alternatives to value_output
-  value_output = tf.nn.softmax(model.value_output)
-  winrate = value_output[0,0]
-
+  winrate = get_winrate(model)
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
-    truth_values = np.linspace(0.0, 1.0)
-    winrates = list(map(lambda p: apply_net_to_board(session, FractionalInputBuilder(p), model, board, Board.BLACK,
-                                                     channel_size, rules, winrate), truth_values))
-    _, axes = plot.subplots()
-    axes.set_xlim(left = -0.1, right = 1.1)
-    axes.set_ylim(bottom = -0.1, top = 1.1)
-    axes.plot(truth_values, winrates)
-    axes.set(xlabel = 'truth value (1 is normal)', ylabel = 'winrate', title='here goes the title')
-    axes.grid()
-    plot.show()
+    def compute_winrate(board, truth_value):
+      return apply_net_to_board(session, FractionalInputBuilder(truth_value), model, board, Board.BLACK, rules, winrate)
+    plot_against_truth_value(compute_winrate, board_size, 5)
+
+def plot_against_truth_value(f, board_size, plot_count):
+  truth_values = np.linspace(0.0, 1.0)
+  _, axes = plot.subplots()
+  axes.set(xlabel = 'truth value', ylabel = 'output')
+  axes.margins(0.1)
+  axes.grid()
+  for _ in range(plot_count):
+    board = generate_board(board_size)
+    outputs = list(map(lambda truth_value: f(board, truth_value), truth_values))
+    axes.plot(truth_values, outputs)
+  plot.show()
+
+def get_winrate(model):
+  value_output = tf.nn.softmax(model.value_output)
+  return value_output[0,0]
 
 def generate_board(size):
   board = Board(size)
@@ -52,11 +58,8 @@ def generate_board(size):
           board.play(player, location)
   return board
 
-def apply_net_to_board(session, input_builder, model, board, own_color, channel_size, rules, output):
-  channel_input, global_input = input_builder.build(model, board, own_color, channel_size, rules)
-  return apply_net_to_inputs(session, model, channel_input, global_input, output)
-
-def apply_net_to_inputs(session, model, channel_input, global_input, output):
+def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
+  channel_input, global_input = input_builder.build(model, board, own_color, rules)
   return session.run([output], feed_dict = {
     model.bin_inputs: channel_input,
     model.global_inputs: global_input,

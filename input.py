@@ -22,7 +22,8 @@ class InputBuilder:
     self.build_channel_from_function(channel, channel_size, board, lambda location:
                                      board.num_liberties(location) == number_of_liberties)
 
-  def build(self, model, board, own_color, channel_size, rules):
+  def build(self, model, board, own_color, rules):
+    channel_size = model.pos_len
     assert(model.version == 8)
     assert(board.size <= channel_size)
     assert(rules['encorePhase'] == 0)
