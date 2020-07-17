@@ -1,9 +1,6 @@
-#!/usr/bin/python3
-import os
 import random
 import json
 import tensorflow as tf
-import numpy as np
 from board import Board
 from model import Model
 from input import InputBuilder, FractionalInputBuilder
@@ -28,8 +25,6 @@ def main():
   # model.outputs_by_layer contains alternatives to value_output
   value_output = tf.nn.softmax(model.value_output)
 
-  input_builder = FractionalInputBuilder(0.99)
-  channel_input, global_input = input_builder.build(model, board, Board.BLACK, channel_size, rules)
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
     print('1.00 says:')
@@ -56,8 +51,8 @@ def apply_net_to_inputs(session, model, channel_input, global_input, output):
   return session.run([output], feed_dict = {
     model.bin_inputs: channel_input,
     model.global_inputs: global_input,
-    model.symmetries: [False,False,False],
-    model.include_history: [[1.0,1.0,1.0,1.0,1.0]]
+    model.symmetries: [False, False, False],
+    model.include_history: [[1.0, 1.0, 1.0, 1.0, 1.0]]
   })
 
 def make_model(name_scope, channel_size, config_path):
