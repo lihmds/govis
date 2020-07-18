@@ -1,11 +1,10 @@
 import random
 import json
-import matplotlib.pyplot as plot
 import numpy as np
 import tensorflow as tf
 from board import Board
 from model import Model
-from input import InputBuilder, FractionalInputBuilder
+from input import InputBuilder
 
 def main():
   model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
@@ -21,41 +20,15 @@ def main():
     "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
-  board_size = 19
+  board = Board(19)
   channel_size = 19
   model = make_model(name_scope, channel_size, model_config_path)
   layer_name, layer = random.choice(model.outputs_by_layer)
   print(layer_name)
   neuron = layer[0, 0, 0, 0]
-
   with tf.Session() as session:
     restore_session(session, model_variables_prefix)
-    def compute_activation(board, truth_value):
-      return apply_net_to_board(session, FractionalInputBuilder(truth_value), model, board, Board.BLACK, rules, neuron)
-    plot_against_truth_value(compute_activation, board_size, 5)
-
-def plot_against_truth_value(f, board_size, plot_count):
-  truth_values = np.linspace(0.0, 1.0)
-  _, axes = plot.subplots()
-  axes.set(xlabel = 'truth value', ylabel = 'output')
-  axes.margins(0.1)
-  axes.grid()
-  for _ in range(plot_count):
-    board = generate_board(board_size)
-    outputs = list(map(lambda truth_value: f(board, truth_value), truth_values))
-    axes.plot(truth_values, outputs)
-  plot.show()
-
-def generate_board(size):
-  board = Board(size)
-  for y in range(board.size):
-    for x in range(board.size):
-      if random.random() < 0.05:
-        player = random.choice([Board.BLACK, Board.WHITE])
-        location = board.loc(x, y)
-        if board.would_be_legal(player, location):
-          board.play(player, location)
-  return board
+    print(apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, rules, neuron))
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
   channel_input, global_input = input_builder.build(model, board, own_color, rules)
