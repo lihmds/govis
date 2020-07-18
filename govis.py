@@ -28,6 +28,7 @@ def main():
   neuron = layer[0, 0, 0, 0]
 
   stochastic_board = StochasticBoard(19)
+  print(stochastic_board.entropies())
   print(stochastic_board.generate_board().to_string())
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):

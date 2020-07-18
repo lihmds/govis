@@ -1,4 +1,5 @@
 import random
+import scipy.stats
 import numpy as np
 from board import Board
 
@@ -10,6 +11,9 @@ class StochasticBoard:
   def __init__(self, size):
     self.size = size
     self.logits = np.zeros([size, size, len(StochasticBoard.colors)], dtype = np.float32)
+
+  def entropies(self):
+    return scipy.stats.entropy(np.exp(self.logits), axis=2)
 
   # the board is generated row by row, so only the last move can be a suicide
   # illegal moves are skipped, while captures are not prevented
