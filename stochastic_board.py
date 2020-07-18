@@ -22,17 +22,10 @@ class StochasticBoard:
     board = Board(self.size)
     for y in range(self.size):
       for x in range(self.size):
-        color = self.generate_legal_color(x, y, board)
-        if color != Board.EMPTY:
+        color = self.generate_color(x, y)
+        if board.would_be_legal(color, board.loc(x, y)):
           board.play(color, board.loc(x, y))
     return board
-
-  def generate_legal_color(self, x, y, board):
-    color = self.generate_color(x, y)
-    if board.would_be_legal(color, board.loc(x, y)):
-      return color
-    else:
-      return Board.EMPTY
 
   def generate_color(self, x, y):
     relative_probabilities = np.exp(self.logits[x, y])
