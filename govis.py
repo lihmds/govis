@@ -5,6 +5,7 @@ import tensorflow as tf
 from board import Board
 from model import Model
 from input import InputBuilder
+from stochastic_board import StochasticBoard
 
 def main():
   model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
@@ -20,15 +21,14 @@ def main():
     "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
-  board = Board(19)
   channel_size = 19
   model = make_model(name_scope, channel_size, model_config_path)
   layer_name, layer = random.choice(model.outputs_by_layer)
   print(layer_name)
   neuron = layer[0, 0, 0, 0]
-  with tf.Session() as session:
-    restore_session(session, model_variables_prefix)
-    print(apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, rules, neuron))
+
+  stochastic_board = StochasticBoard(19)
+  print(stochastic_board.generate_board().to_string())
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
   channel_input, global_input = input_builder.build(model, board, own_color, rules)
