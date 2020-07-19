@@ -1,5 +1,6 @@
 import random
 import json
+import os
 import numpy as np
 import tensorflow as tf
 from board import Board
@@ -8,8 +9,9 @@ from input import InputBuilder
 from stochastic_board import StochasticBoard
 
 def main():
-  model_variables_prefix = "nets/g170-b6c96-s175395328-d26788732/saved_model/variables/variables"
-  model_config_path = "nets/g170-b6c96-s175395328-d26788732/model.config.json"
+  network_path = "nets/g170-b6c96-s175395328-d26788732"
+  model_variables_prefix = os.path.join(network_path, "saved_model/variables/variables")
+  model_config_path = os.path.join(network_path, "model.config.json")
   name_scope = "swa_model"
   rules = {
     "koRule": "KO_SIMPLE",
