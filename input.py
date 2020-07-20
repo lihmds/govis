@@ -74,14 +74,6 @@ class InputBuilder:
     else:
       return delta - 2.0
 
-class FractionalInputBuilder(InputBuilder):
-  def __init__(self, truth_value):
-    self.truth_value = truth_value
-
-  def build_channel_of_color(self, channel, channel_size, board, color):
-    self.build_channel_from_function(channel, channel_size, board, lambda location:
-                                     self.truth_value if board.board[location] == color else 0.0)
-
 def prepend_dimension(array):
   return np.expand_dims(array, 0)
 
@@ -95,6 +87,3 @@ def clamp(min, x, max):
 
 def xy_to_tensor_pos(x, y, channel_size):
   return y*channel_size + x
-
-def has_stone(intersection):
-  return intersection == Board.BLACK or intersection == Board.WHITE
