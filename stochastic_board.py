@@ -17,7 +17,7 @@ class StochasticBoard:
     '''Create a board with uniform distributions everywhere.'''
     self.size = size
     # float32 is what model.py uses
-    self.logits = np.zeros([size, size, len(StochasticBoard.colors)], dtype = np.float32)
+    self.logits = np.zeros(shape = [size, size, len(StochasticBoard.colors)], dtype = np.float32)
 
   def probabilities(self):
     '''Return the distributions of all intersections as a size × size × 3 array.
@@ -52,30 +52,34 @@ class StochasticBoard:
     relative_probabilities = np.exp(self.logits[x, y])
     return random.choices(population = StochasticBoard.colors, weights = relative_probabilities)[0]
 
-  # table[x][y][color] is a list of evaluations of boards with color at (x, y)
-  # might become a separate class
-  def create_evaluation_table(self):
-    return np.zeros(shape = [self.size, self.size, len(StochasticBoard.colors), 0]).tolist()
+  def estimate_gradient(self, objective_function, sample):
+    table = EvaluationTable(self.size)
+    for board in sample:
+      table.add_board(board, objective_function(board))
+    overall_evaluation = table.global_average()
+    local_evaluations = table.local_averages(average_of_empty = overall_evaluation)
+    return self.probabilities() * (local_evaluations - overall_evaluation)
 
-  def add_board_to_evaluation_table(self, board, table, objective_function):
-    evaluation = objective_function(board)
+class EvaluationTable:
+  def __init__(self, size):
+    self.size = size
+    # self.table[x][y][color] is a list of evaluations of boards with color at (x, y)
+    # lists are used because the last dimension is rugged
+    self.table = np.zeros(shape = [size, size, len(StochasticBoard.colors), 0]).tolist()
+
+  def add_board(self, board, evaluation):
     for x in range(self.size):
       for y in range(self.size):
         color = board.board[board.loc(x, y)]
-        table[x][y][color].append(evaluation)
+        self.table[x][y][color].append(evaluation)
 
-  def average_evaluation_table(self, table, average_of_empty):
-    averages = np.zeros_like(self.logits)
+  def global_average(self):
+    return np.mean(list(itertools.chain.from_iterable(self.table[0][0])))
+
+  def local_averages(self, average_of_empty):
+    averages = np.zeros(shape = [self.size, self.size, len(StochasticBoard.colors)], dtype = np.float32)
     for x in range(self.size):
       for y in range(self.size):
         for color in StochasticBoard.colors:
-          averages[x][y][color] = np.mean(table[x][y][color])
+          averages[x, y, color] = np.mean(self.table[x][y][color])
     return np.nan_to_num(averages, copy = False, nan = average_of_empty)
-
-  def estimate_gradient(self, objective_function, sample):
-    table = self.create_evaluation_table()
-    for board in sample:
-      self.add_board_to_evaluation_table(board, table, objective_function)
-    overall_evaluation = np.mean(list(itertools.chain.from_iterable(table[0][0])))
-    average_evaluations = self.average_evaluation_table(table, average_of_empty = overall_evaluation)
-    return self.probabilities() * (average_evaluations - overall_evaluation)
