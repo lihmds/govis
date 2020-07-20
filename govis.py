@@ -19,9 +19,6 @@ def main():
     "scoringRule": "SCORING_AREA",
     "taxRule": "TAX_NONE",
     "multiStoneSuicideLegal": True,
-    "hasButton": False,
-    "encorePhase": 0,
-    "passWouldEndPhase": False,
     "whiteKomi": 7.5
   }
   channel_size = 19
@@ -44,10 +41,9 @@ def get_some_neuron(model):
   return layer[0, 0, 0, 0]
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
-  channel_input, global_input = input_builder.build(model, board, own_color, rules)
   return session.run(output, feed_dict = {
-    model.bin_inputs: channel_input,
-    model.global_inputs: global_input,
+    model.bin_inputs: input_builder.build_channels(model, board, own_color, rules),
+    model.global_inputs: input_builder.build_globals(model, board, own_color, rules),
     model.symmetries: [False, False, False],
     model.include_history: [[1.0, 1.0, 1.0, 1.0, 1.0]]
   })
