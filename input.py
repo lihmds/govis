@@ -3,10 +3,9 @@ import numpy as np
 from board import Board
 
 class InputBuilder:
+  # board history and the encore are ignored
   def build_channels(self, model, board, own_color, rules):
     assert model.version == 8
-    assert rules['scoringRule'] == 'SCORING_AREA'
-    assert rules['taxRule'] == 'TAX_NONE'
     channel_size = model.pos_len
     opponent_color = Board.get_opp(own_color)
     channel_input = np.zeros(shape = [channel_size * channel_size, 22], dtype = np.float32)
@@ -16,17 +15,19 @@ class InputBuilder:
     self.build_liberty_channel(channel_input[:, 3], channel_size, board, 1)
     self.build_liberty_channel(channel_input[:, 4], channel_size, board, 2)
     self.build_liberty_channel(channel_input[:, 5], channel_size, board, 3)
+    assert rules['scoringRule'] == 'SCORING_AREA' # for channels 18, 19
+    assert rules['taxRule'] == 'TAX_NONE' # for channels 18, 19
     return prepend_dimension(channel_input)
 
   def build_globals(self, model, board, own_color, rules):
     assert model.version == 8
-    assert rules['scoringRule'] == 'SCORING_AREA'
-    assert rules['koRule'] == 'KO_SIMPLE'
-    assert rules['taxRule'] == 'TAX_NONE'
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
     global_input = np.zeros(shape = [19], dtype = np.float32)
     global_input[5] = own_komi / 20.0
+    assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
     global_input[8] = rules['multiStoneSuicideLegal']
+    assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
+    assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
     global_input[18] = self.komi_triangle_wave(board, own_komi)
     return prepend_dimension(global_input)
 
@@ -50,10 +51,7 @@ class InputBuilder:
                                      board.num_liberties(location) == number_of_liberties)
 
   def komi_triangle_wave(self, board, own_komi):
-    board_area_is_even = board.size % 2 == 0
-    drawable_komis_are_even = board_area_is_even
-
-    if drawable_komis_are_even:
+    if is_even(board.size):
       komi_floor = math.floor(own_komi / 2.0) * 2.0
     else:
       komi_floor = math.floor((own_komi-1.0) / 2.0) * 2.0 + 1.0
@@ -69,6 +67,9 @@ class InputBuilder:
       return 1.0 - delta
     else:
       return delta - 2.0
+
+def is_even(n):
+  return n % 2 == 0
 
 def prepend_dimension(array):
   return np.expand_dims(array, 0)
