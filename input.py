@@ -31,15 +31,6 @@ class InputBuilder:
     global_input[18] = self.komi_triangle_wave(board, own_komi)
     return prepend_dimension(global_input)
 
-  # f can return a number, or a bool to be converted
-  def build_channel_from_function(self, channel, channel_size, board, f):
-    assert board.size <= channel_size
-    for x in range(board.size):
-      for y in range(board.size):
-        pos = xy_to_tensor_pos(x, y, channel_size)
-        location = board.loc(x, y)
-        channel[pos] = f(location)
-
   def build_whole_board_channel(self, channel, channel_size, board):
     self.build_channel_from_function(channel, channel_size, board, lambda _: True)
 
@@ -49,6 +40,15 @@ class InputBuilder:
   def build_liberty_channel(self, channel, channel_size, board, number_of_liberties):
     self.build_channel_from_function(channel, channel_size, board, lambda location:
                                      board.num_liberties(location) == number_of_liberties)
+
+  # f can return a number, or a bool to be converted
+  def build_channel_from_function(self, channel, channel_size, board, f):
+    assert board.size <= channel_size
+    for x in range(board.size):
+      for y in range(board.size):
+        position = xy_to_tensor_position(x, y, channel_size)
+        location = board.loc(x, y)
+        channel[position] = f(location)
 
   def komi_triangle_wave(self, board, own_komi):
     if is_even(board.size):
@@ -68,11 +68,14 @@ class InputBuilder:
     else:
       return delta - 2.0
 
-def is_even(n):
-  return n % 2 == 0
-
 def prepend_dimension(array):
   return np.expand_dims(array, 0)
+
+def xy_to_tensor_position(x, y, channel_size):
+  return y*channel_size + x
+
+def is_even(n):
+  return n % 2 == 0
 
 def clamp(min, x, max):
   if x < min:
@@ -81,6 +84,3 @@ def clamp(min, x, max):
     return max
   else:
     return x
-
-def xy_to_tensor_pos(x, y, channel_size):
-  return y*channel_size + x
