@@ -9,6 +9,7 @@ from input import InputBuilder
 from stochastic_board import StochasticBoard
 
 def main():
+  np.seterr(all = 'raise')
   network_path = "nets/g170-b6c96-s175395328-d26788732"
   model_variables_prefix = os.path.join(network_path, "saved_model/variables/variables")
   model_config_path = os.path.join(network_path, "model.config.json")
@@ -24,20 +25,23 @@ def main():
     "whiteKomi": 7.5
   }
   channel_size = 19
-  model = make_model(name_scope, channel_size, model_config_path)
-  layer_name, layer = model.outputs_by_layer[0]
-  print(layer_name)
-  neuron = layer[0, 0, 0, 0]
   stochastic_board = StochasticBoard(19)
+  model = make_model(name_scope, channel_size, model_config_path)
+  neuron = get_some_neuron(model)
 
   with tf.compat.v1.Session() as session:
     restore_session(session, model_variables_prefix)
     def objective_function(board):
       return apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, rules, neuron)
     for _ in range(100):
-      stochastic_board.ascend_gradient(objective_function, 1.0, 20)
+      stochastic_board.ascend_gradient(objective_function, 0.5, 20)
       print(stochastic_board.generate_board().to_string(), '\n\n')
     print(stochastic_board.entropies())
+
+def get_some_neuron(model):
+  layer_name, layer = model.outputs_by_layer[0]
+  print(layer_name)
+  return layer[0, 0, 0, 0]
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
   channel_input, global_input = input_builder.build(model, board, own_color, rules)
