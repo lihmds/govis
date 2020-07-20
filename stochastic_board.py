@@ -11,7 +11,7 @@ class StochasticBoard:
   '''The possible colors of an intersection.
   They can be used for array indexing because they are simply 0, 1 and 2.'''
   colors = [Board.EMPTY, Board.BLACK, Board.WHITE]
-  assert(colors == [0, 1, 2])
+  assert colors == [0, 1, 2]
 
   def __init__(self, size):
     '''Create a board with uniform distributions everywhere.'''

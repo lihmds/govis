@@ -4,9 +4,9 @@ from board import Board
 
 class InputBuilder:
   def build_channels(self, model, board, own_color, rules):
-    assert(model.version == 8)
-    assert(rules['scoringRule'] == 'SCORING_AREA')
-    assert(rules['taxRule'] == 'TAX_NONE')
+    assert model.version == 8
+    assert rules['scoringRule'] == 'SCORING_AREA'
+    assert rules['taxRule'] == 'TAX_NONE'
     channel_size = model.pos_len
     opponent_color = Board.get_opp(own_color)
     channel_input = np.zeros(shape = [channel_size * channel_size, 22], dtype = np.float32)
@@ -19,10 +19,10 @@ class InputBuilder:
     return prepend_dimension(channel_input)
 
   def build_globals(self, model, board, own_color, rules):
-    assert(model.version == 8)
-    assert(rules['scoringRule'] == 'SCORING_AREA')
-    assert(rules['koRule'] == 'KO_SIMPLE')
-    assert(rules['taxRule'] == 'TAX_NONE')
+    assert model.version == 8
+    assert rules['scoringRule'] == 'SCORING_AREA'
+    assert rules['koRule'] == 'KO_SIMPLE'
+    assert rules['taxRule'] == 'TAX_NONE'
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
     global_input = np.zeros(shape = [19], dtype = np.float32)
     global_input[5] = own_komi / 20.0
@@ -32,7 +32,7 @@ class InputBuilder:
 
   # f can return a number, or a bool to be converted
   def build_channel_from_function(self, channel, channel_size, board, f):
-    assert(board.size <= channel_size)
+    assert board.size <= channel_size
     for x in range(board.size):
       for y in range(board.size):
         pos = xy_to_tensor_pos(x, y, channel_size)
@@ -59,8 +59,8 @@ class InputBuilder:
       komi_floor = math.floor((own_komi-1.0) / 2.0) * 2.0 + 1.0
 
     delta = own_komi - komi_floor
-    assert(-0.0001 <= delta)
-    assert(delta <= 2.0001)
+    assert -0.0001 <= delta
+    assert delta <= 2.0001
     delta = clamp(0.0, delta, 2.0)
 
     if delta < 0.5:
