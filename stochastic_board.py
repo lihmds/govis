@@ -77,9 +77,11 @@ class EvaluationTable:
     return np.mean(list(itertools.chain.from_iterable(self.table[0][0])))
 
   def local_averages(self, average_of_empty):
+    old_settings = np.seterr(invalid = 'ignore')
     averages = np.zeros(shape = [self.size, self.size, len(StochasticBoard.colors)], dtype = np.float32)
     for x in range(self.size):
       for y in range(self.size):
         for color in StochasticBoard.colors:
           averages[x, y, color] = np.mean(self.table[x][y][color])
+    np.seterr(**old_settings)
     return np.nan_to_num(averages, copy = False, nan = average_of_empty)

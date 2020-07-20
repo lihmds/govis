@@ -36,8 +36,7 @@ def main():
       return apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, rules, neuron)
     for _ in range(100):
       stochastic_board.ascend_gradient(objective_function, 1.0, 20)
-      print(stochastic_board.generate_board().to_string())
-      print('\n')
+      print(stochastic_board.generate_board().to_string(), '\n\n')
     print(stochastic_board.entropies())
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
