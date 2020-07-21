@@ -28,7 +28,7 @@ class InputBuilder:
     global_input[8] = rules['multiStoneSuicideLegal']
     assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
     assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
-    global_input[18] = self.komi_triangle_wave(board, own_komi)
+    global_input[18] = InputBuilder.komi_triangle_wave(own_komi, board)
     return prepend_dimension(global_input)
 
   def build_whole_board_channel(self, channel, channel_size, board):
@@ -50,17 +50,9 @@ class InputBuilder:
         location = board.loc(x, y)
         channel[position] = f(location)
 
-  def komi_triangle_wave(self, board, own_komi):
-    if is_even(board.size):
-      komi_floor = math.floor(own_komi / 2.0) * 2.0
-    else:
-      komi_floor = math.floor((own_komi-1.0) / 2.0) * 2.0 + 1.0
-
-    delta = own_komi - komi_floor
-    assert -0.0001 <= delta
-    assert delta <= 2.0001
-    delta = clamp(0.0, delta, 2.0)
-
+  @staticmethod
+  def komi_triangle_wave(own_komi, board):
+    delta = (own_komi - board.size) % 2
     if delta < 0.5:
       return delta
     elif delta < 1.5:
@@ -73,14 +65,3 @@ def prepend_dimension(array):
 
 def xy_to_tensor_position(x, y, channel_size):
   return y*channel_size + x
-
-def is_even(n):
-  return n % 2 == 0
-
-def clamp(min, x, max):
-  if x < min:
-    return min
-  elif max < x:
-    return max
-  else:
-    return x
