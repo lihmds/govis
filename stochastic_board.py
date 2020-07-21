@@ -53,11 +53,11 @@ class StochasticBoard:
     return random.choices(population = StochasticBoard.colors, weights = relative_probabilities)[0]
 
   def estimate_gradient(self, objective_function, sample):
-    table = EvaluationTable(self.size)
+    evaluations = EvaluationTable(self.size)
     for board in sample:
-      table.add_board(board, objective_function(board))
-    overall_evaluation = table.global_average()
-    local_evaluations = table.local_averages(average_of_empty = overall_evaluation)
+      evaluations.add_board(board, objective_function(board))
+    overall_evaluation = evaluations.global_average()
+    local_evaluations = evaluations.local_averages(average_of_empty = overall_evaluation)
     return self.probabilities() * (local_evaluations - overall_evaluation)
 
 class EvaluationTable:

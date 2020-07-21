@@ -8,28 +8,28 @@ class InputBuilder:
     assert model.version == 8
     channel_size = model.pos_len
     opponent_color = Board.get_opp(own_color)
-    channel_input = np.zeros(shape = [channel_size * channel_size, 22], dtype = np.float32)
-    self.build_whole_board_channel(channel_input[:, 0], channel_size, board)
-    self.build_stone_channel(channel_input[:, 1], channel_size, board, own_color)
-    self.build_stone_channel(channel_input[:, 2], channel_size, board, opponent_color)
-    self.build_liberty_channel(channel_input[:, 3], channel_size, board, 1)
-    self.build_liberty_channel(channel_input[:, 4], channel_size, board, 2)
-    self.build_liberty_channel(channel_input[:, 5], channel_size, board, 3)
+    channels = np.zeros(shape = [channel_size * channel_size, 22], dtype = np.float32)
+    self.build_whole_board_channel(channels[:, 0], channel_size, board)
+    self.build_stone_channel(channels[:, 1], channel_size, board, own_color)
+    self.build_stone_channel(channels[:, 2], channel_size, board, opponent_color)
+    self.build_liberty_channel(channels[:, 3], channel_size, board, 1)
+    self.build_liberty_channel(channels[:, 4], channel_size, board, 2)
+    self.build_liberty_channel(channels[:, 5], channel_size, board, 3)
     assert rules['scoringRule'] == 'SCORING_AREA' # for channels 18, 19
     assert rules['taxRule'] == 'TAX_NONE' # for channels 18, 19
-    return prepend_dimension(channel_input)
+    return prepend_dimension(channels)
 
   def build_globals(self, model, board, own_color, rules):
     assert model.version == 8
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
-    global_input = np.zeros(shape = [19], dtype = np.float32)
-    global_input[5] = own_komi / 20.0
+    globals = np.zeros(shape = [19], dtype = np.float32)
+    globals[5] = own_komi / 20.0
     assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
-    global_input[8] = rules['multiStoneSuicideLegal']
+    globals[8] = rules['multiStoneSuicideLegal']
     assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
     assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
-    global_input[18] = InputBuilder.komi_triangle_wave(own_komi, board)
-    return prepend_dimension(global_input)
+    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board)
+    return prepend_dimension(globals)
 
   def build_whole_board_channel(self, channel, channel_size, board):
     self.build_channel_from_function(channel, channel_size, board, lambda _: True)
