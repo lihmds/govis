@@ -45,7 +45,7 @@ def apply_net_to_board(session, input_builder, model, board, own_color, rules, o
     model.bin_inputs: input_builder.build_channels(model, board, own_color, rules),
     model.global_inputs: input_builder.build_globals(model, board, own_color, rules),
     model.symmetries: [False, False, False],
-    model.include_history: [[1.0, 1.0, 1.0, 1.0, 1.0]]
+    model.include_history: [[0.0, 0.0, 0.0, 0.0, 0.0]]
   })
 
 def make_model(name_scope, channel_size, config_path):
