@@ -28,17 +28,6 @@ class InputBuilder:
     assert rules['taxRule'] == 'TAX_NONE' # for channels 18, 19
     return prepend_dimension(channels)
 
-  def build_globals(self, board, own_color, rules):
-    own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
-    globals = np.zeros(shape = [19], dtype = np.float32)
-    globals[5] = own_komi / 20.0
-    assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
-    globals[8] = rules['multiStoneSuicideLegal']
-    assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
-    assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
-    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board.size)
-    return prepend_dimension(globals)
-
   def build_whole_board_channel(self, channel, board):
     self.build_channel_from_function(channel, board, lambda _: True)
 
@@ -66,6 +55,17 @@ class InputBuilder:
         position = self.model.xy_to_tensor_pos(x, y)
         location = board.loc(x, y)
         channel[position] = f(location)
+
+  def build_globals(self, board, own_color, rules):
+    own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
+    globals = np.zeros(shape = [19], dtype = np.float32)
+    globals[5] = own_komi / 20.0
+    assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
+    globals[8] = rules['multiStoneSuicideLegal']
+    assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
+    assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
+    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board.size)
+    return prepend_dimension(globals)
 
   @staticmethod
   def komi_triangle_wave(own_komi, board_size):
