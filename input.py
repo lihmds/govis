@@ -1,5 +1,6 @@
 import math
 import numpy as np
+import datatypes
 from board import Board
 
 class InputBuilder:
@@ -10,7 +11,7 @@ class InputBuilder:
 
   def build_channels(self, board, own_color, rules):
     opponent_color = Board.get_opp(own_color)
-    channels = np.zeros(shape = [self.channel_size * self.channel_size, 22], dtype = np.float32)
+    channels = np.zeros(shape = [self.channel_size * self.channel_size, 22], dtype = datatypes.float)
     self.build_whole_board_channel(channels[:, 0], board)
     self.build_stone_channel(channels[:, 1], board, own_color)
     self.build_stone_channel(channels[:, 2], board, opponent_color)
@@ -72,7 +73,7 @@ class InputBuilder:
 
   def build_globals(self, board, own_color, rules):
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
-    globals = np.zeros(shape = [19], dtype = np.float32)
+    globals = np.zeros(shape = [19], dtype = datatypes.float)
     globals[5] = own_komi / 20.0
     assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
     globals[8] = rules['multiStoneSuicideLegal']

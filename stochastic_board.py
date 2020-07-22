@@ -2,6 +2,7 @@ import random
 import itertools
 import scipy.stats
 import numpy as np
+import datatypes
 from board import Board
 
 '''A square board with a probability distribution instead of a fixed color at each intersection.
@@ -16,8 +17,7 @@ class StochasticBoard:
   def __init__(self, size):
     '''Create a board with uniform distributions everywhere.'''
     self.size = size
-    # float32 is what model.py uses
-    self.logits = np.zeros(shape = [size, size, len(StochasticBoard.colors)], dtype = np.float32)
+    self.logits = np.zeros(shape = [size, size, len(StochasticBoard.colors)], dtype = datatypes.float)
 
   def probabilities(self):
     '''Return the distributions of all intersections as a size × size × 3 array.
@@ -78,7 +78,7 @@ class EvaluationTable:
 
   def local_averages(self, average_of_empty):
     old_settings = np.seterr(invalid = 'ignore')
-    averages = np.zeros(shape = [self.size, self.size, len(StochasticBoard.colors)], dtype = np.float32)
+    averages = np.zeros(shape = [self.size, self.size, len(StochasticBoard.colors)], dtype = datatypes.float)
     for x in range(self.size):
       for y in range(self.size):
         for color in StochasticBoard.colors:
