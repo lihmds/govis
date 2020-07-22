@@ -91,5 +91,15 @@ class InputBuilder:
     else:
       return delta - 2.0
 
+class QuickInputBuilder(InputBuilder):
+  def __init__(self, model):
+    super().__init__(model)
+
+  def build_ladder_channels(*_):
+    pass
+
+  def build_pass_alive_area_channels(*_):
+    pass
+
 def prepend_dimension(array):
   return np.expand_dims(array, 0)

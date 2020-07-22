@@ -5,7 +5,7 @@ import numpy as np
 import tensorflow as tf
 from board import Board
 from model import Model
-from input import InputBuilder
+from input import InputBuilder, QuickInputBuilder
 from stochastic_board import StochasticBoard
 
 def main():
