@@ -1,72 +1,89 @@
 import math
-import tensorflow as tf
 import numpy as np
 from board import Board
 
 class InputBuilder:
-  # f can return a number, or a bool to be converted
-  def build_channel_from_function(self, channel, channel_size, board, f):
-    for y in range(board.size):
-      for x in range(board.size):
-        pos = xy_to_tensor_pos(x, y, channel_size)
-        location = board.loc(x, y)
-        channel[pos] = f(location)
+  def __init__(self, model):
+    assert model.version == 8
+    self.model = model
+    self.channel_size = model.pos_len
 
-  def build_whole_board_channel(self, channel, channel_size, board):
-    self.build_channel_from_function(channel, channel_size, board, lambda _: True)
-
-  def build_channel_of_color(self, channel, channel_size, board, color):
-    self.build_channel_from_function(channel, channel_size, board, lambda location: board.board[location] == color)
-
-  def build_channel_of_liberties(self, channel, channel_size, board, number_of_liberties):
-    self.build_channel_from_function(channel, channel_size, board, lambda location:
-                                     board.num_liberties(location) == number_of_liberties)
-
-  def build(self, model, board, own_color, rules):
-    channel_size = model.pos_len
-    assert(model.version == 8)
-    assert(board.size <= channel_size)
-    assert(rules['encorePhase'] == 0)
-    assert(rules['scoringRule'] == 'SCORING_AREA')
-    assert(rules['koRule'] == 'KO_SIMPLE')
-    assert(rules['taxRule'] == 'TAX_NONE')
-    assert(rules['passWouldEndPhase'] == False)
-
-    num_channel_input_features = 22
-    channel_input = np.zeros(shape = [channel_size * channel_size, num_channel_input_features], dtype = np.float32)
-
-    num_global_input_features = 19
-    global_input = np.zeros(shape = [num_global_input_features], dtype = np.float32)
-
+  def build_channels(self, board, own_color, rules):
     opponent_color = Board.get_opp(own_color)
-    white_komi = rules['whiteKomi']
-    own_komi = (white_komi if own_color == Board.WHITE else -white_komi)
+    channels = np.zeros(shape = [self.channel_size * self.channel_size, 22], dtype = np.float32)
+    self.build_whole_board_channel(channels[:, 0], board)
+    self.build_stone_channel(channels[:, 1], board, own_color)
+    self.build_stone_channel(channels[:, 2], board, opponent_color)
+    self.build_liberty_channel(channels[:, 3], board, 1)
+    self.build_liberty_channel(channels[:, 4], board, 2)
+    self.build_liberty_channel(channels[:, 5], board, 3)
+    # channel 6 is skipped - ko is ignored
+    # channels 7, 8 are skipped - the encore is ignored
+    # channels 9-13 are skipped - board history is ignored
+    self.build_ladder_channels(channels[:, 14], channels[:, 17], board, own_color)
+    # past ladder statuses are set to the current ones because board history is ignored
+    channels[:, 15] = channels[:, 14]
+    channels[:, 16] = channels[:, 14]
+    self.build_pass_alive_area_channels(channels[:, 18], channels[:, 19], board, own_color, rules)
+    # channels 20, 21 are skipped - the encore is ignored
+    return prepend_dimension(channels)
 
-    self.build_whole_board_channel(channel_input[:,0], channel_size, board)
-    self.build_channel_of_color(channel_input[:,1], channel_size, board, own_color)
-    self.build_channel_of_color(channel_input[:,2], channel_size, board, opponent_color)
-    self.build_channel_of_liberties(channel_input[:,3], channel_size, board, 1)
-    self.build_channel_of_liberties(channel_input[:,4], channel_size, board, 2)
-    self.build_channel_of_liberties(channel_input[:,5], channel_size, board, 3)
-    global_input[5] = own_komi / 20.0
-    global_input[8] = rules['multiStoneSuicideLegal']
-    global_input[18] = self.komi_sawtooth_wave(board, own_komi)
-    return prepend_dimension(channel_input), prepend_dimension(global_input)
+  def build_whole_board_channel(self, channel, board):
+    self.build_channel_from_function(channel, board, lambda _: True)
 
-  def komi_sawtooth_wave(self, board, self_komi):
-    board_area_is_even = board.size % 2 == 0
-    drawable_komis_are_even = board_area_is_even
+  def build_stone_channel(self, channel, board, color):
+    self.build_channel_from_function(channel, board, lambda location: board.board[location] == color)
 
-    if drawable_komis_are_even:
-      komi_floor = math.floor(self_komi / 2.0) * 2.0
-    else:
-      komi_floor = math.floor((self_komi-1.0) / 2.0) * 2.0 + 1.0
+  def build_liberty_channel(self, channel, board, number_of_liberties):
+    self.build_channel_from_function(channel, board, lambda location: board.num_liberties(location) == number_of_liberties)
 
-    delta = self_komi - komi_floor
-    assert(-0.0001 <= delta)
-    assert(delta <= 2.0001)
-    delta = clamp(0.0, delta, 2.0)
+  def build_ladder_channels(self, ladderable_stones, working_ladder_captures, board, own_color):
+    opponent_color = Board.get_opp(own_color)
+    def add_ladderable_stone(location, position, working_moves):
+      ladderable_stones[position] = 1.0
+      if board.board[location] == opponent_color and 1 < board.num_liberties(location):
+        for move in working_moves:
+          move_position = self.model.loc_to_tensor_pos(move, board)
+          working_ladder_captures[move_position] = 1.0
+    self.model.iterLadders(board, add_ladderable_stone)
 
+  def build_pass_alive_area_channels(self, own_area, opponent_area, board, own_color, rules):
+    assert rules['scoringRule'] == 'SCORING_AREA'
+    assert rules['taxRule'] == 'TAX_NONE'
+    opponent_color = Board.get_opp(own_color)
+    area = [0 for _ in range(board.arrsize)]
+    board.calculateArea(area, True, True, True, rules['multiStoneSuicideLegal'])
+    for x in range(board.size):
+      for y in range(board.size):
+        position = self.model.xy_to_tensor_pos(x, y)
+        if area[board.loc(x, y)] == own_color:
+          own_area[position] = 1.0
+        elif area[board.loc(x, y)] == opponent_color:
+          opponent_area[position] = 1.0
+
+  # f can return a number, or a bool to be converted
+  def build_channel_from_function(self, channel, board, f):
+    assert board.size <= self.channel_size
+    for x in range(board.size):
+      for y in range(board.size):
+        position = self.model.xy_to_tensor_pos(x, y)
+        location = board.loc(x, y)
+        channel[position] = f(location)
+
+  def build_globals(self, board, own_color, rules):
+    own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
+    globals = np.zeros(shape = [19], dtype = np.float32)
+    globals[5] = own_komi / 20.0
+    assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
+    globals[8] = rules['multiStoneSuicideLegal']
+    assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
+    assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
+    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board.size)
+    return prepend_dimension(globals)
+
+  @staticmethod
+  def komi_triangle_wave(own_komi, board_size):
+    delta = (own_komi - board_size) % 2
     if delta < 0.5:
       return delta
     elif delta < 1.5:
@@ -74,27 +91,15 @@ class InputBuilder:
     else:
       return delta - 2.0
 
-class FractionalInputBuilder(InputBuilder):
-  def __init__(self, truth_value):
-    self.truth_value = truth_value
+class QuickInputBuilder(InputBuilder):
+  def __init__(self, model):
+    super().__init__(model)
 
-  def build_channel_of_color(self, channel, channel_size, board, color):
-    self.build_channel_from_function(channel, channel_size, board, lambda location:
-                                     self.truth_value if board.board[location] == color else 0.0)
+  def build_ladder_channels(*_):
+    pass
+
+  def build_pass_alive_area_channels(*_):
+    pass
 
 def prepend_dimension(array):
   return np.expand_dims(array, 0)
-
-def clamp(min, x, max):
-  if x < min:
-    return min
-  elif max < x:
-    return max
-  else:
-    return x
-
-def xy_to_tensor_pos(x, y, channel_size):
-  return y*channel_size + x
-
-def has_stone(intersection):
-  return intersection == Board.BLACK or intersection == Board.WHITE
