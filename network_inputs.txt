@@ -13,7 +13,8 @@ channels 14, 15, 16 describe ladderable stones of both players 0, 1, 2 turns ago
   for a chain with one liberty, the defender starts the ladder to be checked
   for a chain with two liberties, the attacker starts the ladder
 channel 17 are moves with which katago can capture a chain in a ladder
-channels 18, 19 describe pass-alive area for both players
+channel 18 is katago's pass-alive area
+channel 19 is the opponent's pass-alive area
 channels 20, 21 are second encore phase starting stones
 globals 0-4 describe the last five moves
   global 0 is the most recent

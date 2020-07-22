@@ -24,8 +24,8 @@ class InputBuilder:
     # past ladder statuses are set to the current ones because board history is ignored
     channels[:, 15] = channels[:, 14]
     channels[:, 16] = channels[:, 14]
-    assert rules['scoringRule'] == 'SCORING_AREA' # for channels 18, 19
-    assert rules['taxRule'] == 'TAX_NONE' # for channels 18, 19
+    self.build_pass_alive_area_channels(channels[:, 18], channels[:, 19], board, own_color, rules)
+    # channels 20, 21 are skipped - the encore is ignored
     return prepend_dimension(channels)
 
   def build_whole_board_channel(self, channel, board):
@@ -46,6 +46,20 @@ class InputBuilder:
           move_position = self.model.loc_to_tensor_pos(move, board)
           working_ladder_captures[move_position] = 1.0
     self.model.iterLadders(board, add_ladderable_stone)
+
+  def build_pass_alive_area_channels(self, own_area, opponent_area, board, own_color, rules):
+    assert rules['scoringRule'] == 'SCORING_AREA'
+    assert rules['taxRule'] == 'TAX_NONE'
+    opponent_color = Board.get_opp(own_color)
+    area = [0 for _ in range(board.arrsize)]
+    board.calculateArea(area, True, True, True, rules['multiStoneSuicideLegal'])
+    for x in range(board.size):
+      for y in range(board.size):
+        position = self.model.xy_to_tensor_pos(x, y)
+        if area[board.loc(x, y)] == own_color:
+          own_area[position] = 1.0
+        elif area[board.loc(x, y)] == opponent_color:
+          opponent_area[position] = 1.0
 
   # f can return a number, or a bool to be converted
   def build_channel_from_function(self, channel, board, f):
