@@ -30,7 +30,7 @@ class InputBuilder:
     globals[8] = rules['multiStoneSuicideLegal']
     assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
     assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
-    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board)
+    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board.size)
     return prepend_dimension(globals)
 
   def build_whole_board_channel(self, channel, board):
@@ -52,8 +52,8 @@ class InputBuilder:
         channel[position] = f(location)
 
   @staticmethod
-  def komi_triangle_wave(own_komi, board):
-    delta = (own_komi - board.size) % 2
+  def komi_triangle_wave(own_komi, board_size):
+    delta = (own_komi - board_size) % 2
     if delta < 0.5:
       return delta
     elif delta < 1.5:
