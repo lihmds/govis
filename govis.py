@@ -29,7 +29,7 @@ def main():
   with tf.compat.v1.Session() as session:
     restore_session(session, model_variables_prefix)
     def objective_function(board):
-      return apply_net_to_board(session, InputBuilder(), model, board, Board.BLACK, rules, neuron)
+      return apply_net_to_board(session, InputBuilder(model), model, board, Board.BLACK, rules, neuron)
     for _ in range(100):
       stochastic_board.ascend_gradient(objective_function, 0.5, 20)
       print(stochastic_board.generate_board().to_string(), '\n\n')
@@ -42,8 +42,8 @@ def get_some_neuron(model):
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
   return session.run(output, feed_dict = {
-    model.bin_inputs: input_builder.build_channels(model, board, own_color, rules),
-    model.global_inputs: input_builder.build_globals(model, board, own_color, rules),
+    model.bin_inputs: input_builder.build_channels(board, own_color, rules),
+    model.global_inputs: input_builder.build_globals(board, own_color, rules),
     model.symmetries: [False, False, False],
     model.include_history: [[0.0, 0.0, 0.0, 0.0, 0.0]]
   })

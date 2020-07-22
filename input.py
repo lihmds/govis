@@ -3,24 +3,26 @@ import numpy as np
 from board import Board
 
 class InputBuilder:
-  # board history and the encore are ignored
-  def build_channels(self, model, board, own_color, rules):
+  def __init__(self, model):
     assert model.version == 8
-    channel_size = model.pos_len
+    self.model = model
+    self.channel_size = model.pos_len
+
+  # board history and the encore are ignored
+  def build_channels(self, board, own_color, rules):
     opponent_color = Board.get_opp(own_color)
-    channels = np.zeros(shape = [channel_size * channel_size, 22], dtype = np.float32)
-    self.build_whole_board_channel(channels[:, 0], channel_size, board)
-    self.build_stone_channel(channels[:, 1], channel_size, board, own_color)
-    self.build_stone_channel(channels[:, 2], channel_size, board, opponent_color)
-    self.build_liberty_channel(channels[:, 3], channel_size, board, 1)
-    self.build_liberty_channel(channels[:, 4], channel_size, board, 2)
-    self.build_liberty_channel(channels[:, 5], channel_size, board, 3)
+    channels = np.zeros(shape = [self.channel_size * self.channel_size, 22], dtype = np.float32)
+    self.build_whole_board_channel(channels[:, 0], board)
+    self.build_stone_channel(channels[:, 1], board, own_color)
+    self.build_stone_channel(channels[:, 2], board, opponent_color)
+    self.build_liberty_channel(channels[:, 3], board, 1)
+    self.build_liberty_channel(channels[:, 4], board, 2)
+    self.build_liberty_channel(channels[:, 5], board, 3)
     assert rules['scoringRule'] == 'SCORING_AREA' # for channels 18, 19
     assert rules['taxRule'] == 'TAX_NONE' # for channels 18, 19
     return prepend_dimension(channels)
 
-  def build_globals(self, model, board, own_color, rules):
-    assert model.version == 8
+  def build_globals(self, board, own_color, rules):
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
     globals = np.zeros(shape = [19], dtype = np.float32)
     globals[5] = own_komi / 20.0
@@ -31,22 +33,21 @@ class InputBuilder:
     globals[18] = InputBuilder.komi_triangle_wave(own_komi, board)
     return prepend_dimension(globals)
 
-  def build_whole_board_channel(self, channel, channel_size, board):
-    self.build_channel_from_function(channel, channel_size, board, lambda _: True)
+  def build_whole_board_channel(self, channel, board):
+    self.build_channel_from_function(channel, board, lambda _: True)
 
-  def build_stone_channel(self, channel, channel_size, board, color):
-    self.build_channel_from_function(channel, channel_size, board, lambda location: board.board[location] == color)
+  def build_stone_channel(self, channel, board, color):
+    self.build_channel_from_function(channel, board, lambda location: board.board[location] == color)
 
-  def build_liberty_channel(self, channel, channel_size, board, number_of_liberties):
-    self.build_channel_from_function(channel, channel_size, board, lambda location:
-                                     board.num_liberties(location) == number_of_liberties)
+  def build_liberty_channel(self, channel, board, number_of_liberties):
+    self.build_channel_from_function(channel, board, lambda location: board.num_liberties(location) == number_of_liberties)
 
   # f can return a number, or a bool to be converted
-  def build_channel_from_function(self, channel, channel_size, board, f):
-    assert board.size <= channel_size
+  def build_channel_from_function(self, channel, board, f):
+    assert board.size <= self.channel_size
     for x in range(board.size):
       for y in range(board.size):
-        position = xy_to_tensor_position(x, y, channel_size)
+        position = self.model.xy_to_tensor_pos(x, y)
         location = board.loc(x, y)
         channel[position] = f(location)
 
@@ -62,6 +63,3 @@ class InputBuilder:
 
 def prepend_dimension(array):
   return np.expand_dims(array, 0)
-
-def xy_to_tensor_position(x, y, channel_size):
-  return y*channel_size + x
