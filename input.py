@@ -74,11 +74,15 @@ class InputBuilder:
   def build_globals(self, board, own_color, rules):
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
     globals = np.zeros(shape = [19], dtype = datatypes.float)
+    # globals 0-4 are skipped - board history is ignored
     globals[5] = own_komi / 20.0
     assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
     globals[8] = rules['multiStoneSuicideLegal']
     assert rules['scoringRule'] == 'SCORING_AREA' # for global 9
     assert rules['taxRule'] == 'TAX_NONE' # for globals 10, 11
+    # globals 12-14 are skipped - the encore and game phases are ignored
+    # globals 15, 16 are skipped - playout doubling advantage is ignored
+    # global 17 is skipped - button go is ignored
     globals[18] = InputBuilder.komi_triangle_wave(own_komi, board.size)
     return prepend_dimension(globals)
 
