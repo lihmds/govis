@@ -6,7 +6,7 @@ import datatypes
 from board import Board
 
 '''A square board with a probability distribution instead of a fixed color at each intersection.
-All arrays are indexed like array[x, y] (column-major).'''
+All arrays here are indexed like array[x, y] (column-major).'''
 
 class StochasticBoard:
   '''The possible colors of an intersection.

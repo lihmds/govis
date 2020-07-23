@@ -36,9 +36,14 @@ def main():
     print(stochastic_board.entropies())
 
 def get_some_neuron(model):
-  layer_name, layer = model.outputs_by_layer[0]
+  layer_index = 0
+  channel_index = 0
+  x = 0
+  y = 0
+  layer_name, layer = model.outputs_by_layer[layer_index]
   print('layer name:', layer_name)
-  return layer[0, 0, 0, 0]
+  print('layer shape:', layer.shape)
+  return layer[0, y, x, channel_index]
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
   return session.run(output, feed_dict = {
