@@ -10,16 +10,16 @@ from stochastic_board import StochasticBoard
 
 def main():
   np.seterr(all = 'raise')
-  network_path = "nets/g170-b6c96-s175395328-d26788732"
-  model_variables_prefix = os.path.join(network_path, "saved_model/variables/variables")
-  model_config_path = os.path.join(network_path, "model.config.json")
-  name_scope = "swa_model"
+  network_path = 'nets/g170-b6c96-s175395328-d26788732'
+  model_variables_prefix = os.path.join(network_path, 'saved_model/variables/variables')
+  model_config_path = os.path.join(network_path, 'model.config.json')
+  name_scope = 'swa_model'
   rules = {
-    "koRule": "KO_SIMPLE",
-    "scoringRule": "SCORING_AREA",
-    "taxRule": "TAX_NONE",
-    "multiStoneSuicideLegal": True,
-    "whiteKomi": 7.5
+    'koRule': 'KO_SIMPLE',
+    'scoringRule': 'SCORING_AREA',
+    'taxRule': 'TAX_NONE',
+    'multiStoneSuicideLegal': True,
+    'whiteKomi': 7.5
   }
   channel_size = 19
   stochastic_board = StochasticBoard(19)
