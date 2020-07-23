@@ -37,7 +37,7 @@ def main():
 
 def get_some_neuron(model):
   layer_name, layer = model.outputs_by_layer[0]
-  print(layer_name)
+  print('layer name:', layer_name)
   return layer[0, 0, 0, 0]
 
 def apply_net_to_board(session, input_builder, model, board, own_color, rules, output):
