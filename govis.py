@@ -34,7 +34,7 @@ def get_neuron(model):
   return layer[0, neuron_location['y'], neuron_location['x'], neuron_location['channel']]
 
 def restore_session(session):
-  saver = tf.compat.v1.train.Saver(max_to_keep = 10000, save_relative_paths = True)
+  saver = tf.compat.v1.train.Saver()
   saver.restore(session, model_parameters['variables_prefix'])
 
 def apply_net_to_board(session, output, model, input_builder, board):
