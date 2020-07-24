@@ -3,7 +3,7 @@ import numpy as np
 import datatypes
 from board import Board
 
-class InputBuilder:
+class FullInputBuilder:
   def __init__(self, model):
     assert model.version == 8
     self.model = model
@@ -83,7 +83,7 @@ class InputBuilder:
     # globals 12-14 are skipped - the encore and game phases are ignored
     # globals 15, 16 are skipped - playout doubling advantage is ignored
     # global 17 is skipped - button go is ignored
-    globals[18] = InputBuilder.komi_triangle_wave(own_komi, board.size)
+    globals[18] = FullInputBuilder.komi_triangle_wave(own_komi, board.size)
     return prepend_dimension(globals)
 
   @staticmethod
@@ -96,7 +96,7 @@ class InputBuilder:
     else:
       return delta - 2.0
 
-class QuickInputBuilder(InputBuilder):
+class QuickInputBuilder(FullInputBuilder):
   def __init__(self, model):
     super().__init__(model)
 

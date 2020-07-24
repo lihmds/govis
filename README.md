@@ -4,10 +4,10 @@ One method is to take a neuron (or a whole channel) and find inputs that cause a
 
 `StochasticBoard` tries to overcome this with probability distributions, which are continuous even if the sample space is discrete. The optimization relies on random samples instead of the network's derivative. Random sample boards are used to visualize the progress of the optimization as well.
 
-At present the program focuses on [KataGo](https://github.com/lightvector/KataGo/)'s networks. `model.py` and `board.py` are taken verbatim from its source code. A small net is included by default in `nets/`. Feel free to experiment with other ones, changing the `network_path` in `govis.py` appropriately.
+At present the program focuses on [KataGo](https://github.com/lightvector/KataGo/)'s networks. `model.py` and `board.py` are taken verbatim from its source code. A small net is included by default in `nets/`. Feel free to experiment with other ones, changing the `network_path` in `parameters.py` appropriately.
 
 # Running
 
 This project requires TensorFlow 1. Run with `python3 govis.py`.
 
-By default, a corner neuron of the first layer is visualized. Soon you should see that black stones (marked as `X`) dominate the upper left corner. Again, feel free to experiment with other neurons by changing `get_some_neuron` in `govis.py`.
+By default, a corner neuron of the first layer is visualized. Soon you should see that black stones (marked as `X`) dominate the upper left corner. Again, feel free to experiment with other neurons by changing the `neuron_location` in `parameters.py`.
