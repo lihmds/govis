@@ -19,6 +19,7 @@ neuron_location = {
   'y': 0
 }
 hyperparameters = {
+  'iteration_count': 50,
   'rate': 0.5,
   'sample_size': 20
 }

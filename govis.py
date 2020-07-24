@@ -16,7 +16,7 @@ def main():
     restore_session(session)
     def objective_function(board):
       return apply_net_to_board(session, neuron, model, input_builder, board)
-    for _ in range(100):
+    for _ in range(hyperparameters['iteration_count']):
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
       print(stochastic_board.generate_board().to_string(), '\n\n')
     print(stochastic_board.entropies())
