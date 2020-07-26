@@ -10,6 +10,7 @@ from stochastic_board import StochasticBoard
 
 def main():
   np.seterr(all = 'raise')
+  np.set_printoptions(threshold = np.inf)
   stochastic_board = StochasticBoard(board_size)
   model = make_model()
   neuron = get_neuron(model)
