@@ -9,3 +9,4 @@ verify_ssl = true
 tensorflow = "~= 1.15"
 numpy = "~= 1.19"
 scipy = "~= 1.5"
+pyglet = "~= 1.5"

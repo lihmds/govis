@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import tensorflow as tf
+from graphics import BoardProbabilityDisplay
 from parameters import board_size, katago_color, InputBuilder, model_parameters, neuron_location, hyperparameters, rules
 from board import Board
 from model import Model
@@ -12,6 +13,7 @@ def main():
   model = make_model()
   neuron = get_neuron(model)
   input_builder = InputBuilder(model)
+  display = BoardProbabilityDisplay(board_size, 800)
   with tf.compat.v1.Session() as session:
     restore_session(session)
     def objective_function(board):
@@ -19,6 +21,7 @@ def main():
     for _ in range(hyperparameters['iteration_count']):
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
       print(stochastic_board.generate_board().to_string(), '\n\n')
+      display.draw(stochastic_board.probabilities())
     print(stochastic_board.entropies())
 
 def make_model():
