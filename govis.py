@@ -27,6 +27,8 @@ def main():
       window.dispatch_events()
       display.draw(stochastic_board.probabilities())
       window.flip()
+  print(stochastic_board.probabilities())
+  input("Press enter to close...")
 
 def make_model():
   with open(model_parameters['config_path']) as f:
