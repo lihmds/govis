@@ -22,7 +22,6 @@ def main():
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
       print(stochastic_board.generate_board().to_string(), '\n\n')
       display.draw(stochastic_board.probabilities())
-    print(stochastic_board.entropies())
 
 def make_model():
   with open(model_parameters['config_path']) as f:

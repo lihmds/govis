@@ -1,6 +1,5 @@
 import random
 import itertools
-import scipy.stats
 import numpy as np
 import datatypes
 from board import Board
@@ -24,10 +23,6 @@ class StochasticBoard:
     Indexed as array[x, y, color].'''
     relative_probabilities = np.exp(self.logits)
     return relative_probabilities / relative_probabilities.sum(axis = 2, keepdims = True)
-
-  def entropies(self):
-    '''Return the entropy of each probability distribution in nats as a size × size array.'''
-    return scipy.stats.entropy(np.exp(self.logits), axis = 2)
 
   def ascend_gradient(self, objective_function, rate, sample_size):
     '''Adjust the probabilities so that the expected value of objective_function grows.'''
