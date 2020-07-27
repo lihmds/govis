@@ -4,7 +4,6 @@ from board import Board
 
 board_size = 19
 katago_color = Board.BLACK
-window_size = 800
 InputBuilder = FullInputBuilder
 network_path = 'nets/g170-b6c96-s175395328-d26788732'
 model_parameters = {
@@ -30,6 +29,10 @@ rules = {
   'taxRule': 'TAX_NONE',
   'multiStoneSuicideLegal': True,
   'whiteKomi': 7.5
+}
+layout_parameters = {
+  'window_size': 800,
+  'grid_thickness': 2
 }
 color_scheme = {
   'black_rgb': (0, 0, 0),
