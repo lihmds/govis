@@ -3,7 +3,7 @@ import numpy as np
 import tensorflow as tf
 import pyglet
 from graphics import BoardProbabilityDisplay
-from parameters import board_size, katago_color, InputBuilder, model_parameters, neuron_location, hyperparameters, rules
+from parameters import *
 from board import Board
 from model import Model
 from stochastic_board import StochasticBoard
@@ -15,7 +15,6 @@ def main():
   model = make_model()
   neuron = get_neuron(model)
   input_builder = InputBuilder(model)
-  window_size = 800
   window = pyglet.window.Window(window_size, window_size)
   display = BoardProbabilityDisplay(board_size, window_size)
   with tf.compat.v1.Session() as session:

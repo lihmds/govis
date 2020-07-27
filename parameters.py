@@ -4,6 +4,7 @@ from board import Board
 
 board_size = 19
 katago_color = Board.BLACK
+window_size = 800
 InputBuilder = FullInputBuilder
 network_path = 'nets/g170-b6c96-s175395328-d26788732'
 model_parameters = {
