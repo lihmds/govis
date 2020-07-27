@@ -63,27 +63,23 @@ class BoardPainter:
     circle.draw() # batching is recommended instead
 
   def draw_intersection(self, x, y, opacity):
-    self.draw_vertical_intersection_part(x, y, opacity)
-    self.draw_left_intersection_arm(x, y, opacity)
-    self.draw_right_intersection_arm(x, y, opacity)
-
-  def draw_vertical_intersection_part(self, x, y, opacity):
     center_x = self.board_to_screen_x(x)
     center_y = self.board_to_screen_y(y)
+    self.draw_vertical_intersection_part(center_x, center_y, opacity)
+    self.draw_left_intersection_arm(center_x, center_y, opacity)
+    self.draw_right_intersection_arm(center_x, center_y, opacity)
+
+  def draw_vertical_intersection_part(self, center_x, center_y, opacity):
     top_y = center_y + self.tile_radius
     bottom_y = center_y - self.tile_radius
     self.draw_intersection_line(center_x, top_y, center_x, bottom_y, opacity)
 
-  def draw_left_intersection_arm(self, x, y, opacity):
-    center_x = self.board_to_screen_x(x)
-    center_y = self.board_to_screen_y(y)
+  def draw_left_intersection_arm(self, center_x, center_y, opacity):
     left_x = center_x - self.tile_radius
     mid_left_x = center_x - layout_parameters['grid_thickness'] / 2
     self.draw_intersection_line(left_x, center_y, mid_left_x, center_y, opacity)
 
-  def draw_right_intersection_arm(self, x, y, opacity):
-    center_x = self.board_to_screen_x(x)
-    center_y = self.board_to_screen_y(y)
+  def draw_right_intersection_arm(self, center_x, center_y, opacity):
     mid_right_x = center_x + layout_parameters['grid_thickness'] / 2
     right_x = center_x + self.tile_radius
     self.draw_intersection_line(mid_right_x, center_y, right_x, center_y, opacity)
