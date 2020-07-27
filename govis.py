@@ -21,9 +21,8 @@ def main():
       return apply_net_to_board(session, neuron, model, input_builder, board)
     for _ in range(hyperparameters['iteration_count']):
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
-      probabilities = stochastic_board.probabilities()
-      display.update(probabilities)
-      print(probabilities, '\n\n')
+      display.update(stochastic_board.probabilities())
+  print(stochastic_board.probabilities(), '\n\n')
   input("Press enter to close...")
 
 def configure_numpy():

@@ -31,9 +31,10 @@ rules = {
   'multiStoneSuicideLegal': True,
   'whiteKomi': 7.5
 }
-color_theme = {
+color_scheme = {
   'black_rgb': (0, 0, 0),
   'white_rgb': (255, 255, 255),
+  'line_rgb': (0, 0, 0),
   'background_rgb': (250, 170, 80),
   'max_opacity': 255
 }

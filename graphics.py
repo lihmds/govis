@@ -1,7 +1,7 @@
 from scipy.interpolate import interp1d
 import numpy as np
 import pyglet
-from parameters import window_size, color_theme
+from parameters import window_size, color_scheme
 from board import Board
 from stochastic_board import StochasticBoard
 
@@ -26,15 +26,15 @@ class ProbabilityDisplay:
     if dominant_color == Board.EMPTY:
       self.painter.draw_intersection(x, y, opacity)
     elif dominant_color == Board.BLACK:
-      self.painter.draw_stone(x, y, opacity, color_theme['black_rgb'])
+      self.painter.draw_stone(x, y, opacity, color_scheme['black_rgb'])
     elif dominant_color == Board.WHITE:
-      self.painter.draw_stone(x, y, opacity, color_theme['white_rgb'])
+      self.painter.draw_stone(x, y, opacity, color_scheme['white_rgb'])
     else:
       assert False
 
   def calculate_opacity(self, highest_probability):
     highest_probability_range = [1/len(StochasticBoard.colors), 1]
-    opacity_range = [0, color_theme['max_opacity']]
+    opacity_range = [0, color_scheme['max_opacity']]
     interpolate = interp1d(highest_probability_range, opacity_range)
     return interpolate(highest_probability)
 
@@ -43,7 +43,7 @@ class BoardBackground:
     margin = 10
     background_size = window_size + 2*margin
     self.background = pyglet.shapes.Rectangle(-margin, -margin, width = background_size, height = background_size)
-    self.background.color = color_theme['background_rgb']
+    self.background.color = color_scheme['background_rgb']
 
   def draw(self):
     self.background.draw()
@@ -54,6 +54,7 @@ class BoardPainter:
     self.board_to_screen_x = interp1d([0, board_size-1], [self.tile_radius, window_size - self.tile_radius])
     # y increases upwards in pyglet's coordinates, but downwards in board coordinates
     self.board_to_screen_y = interp1d([0, board_size-1], [window_size - self.tile_radius, self.tile_radius])
+    self.line_thickness = 2
 
   def draw_stone(self, x, y, opacity, color):
     circle = pyglet.shapes.Circle(self.board_to_screen_x(x), self.board_to_screen_y(y), self.tile_radius)
@@ -62,4 +63,33 @@ class BoardPainter:
     circle.draw() # batching is recommended instead
 
   def draw_intersection(self, x, y, opacity):
-    pass
+    self.draw_vertical_intersection_part(x, y, opacity)
+    self.draw_left_intersection_arm(x, y, opacity)
+    self.draw_right_intersection_arm(x, y, opacity)
+
+  def draw_vertical_intersection_part(self, x, y, opacity):
+    center_x = self.board_to_screen_x(x)
+    center_y = self.board_to_screen_y(y)
+    top_y = center_y + self.tile_radius
+    bottom_y = center_y - self.tile_radius
+    self.draw_intersection_line(center_x, top_y, center_x, bottom_y, opacity)
+
+  def draw_left_intersection_arm(self, x, y, opacity):
+    center_x = self.board_to_screen_x(x)
+    center_y = self.board_to_screen_y(y)
+    left_x = center_x - self.tile_radius
+    mid_left_x = center_x - self.line_thickness/2
+    self.draw_intersection_line(left_x, center_y, mid_left_x, center_y, opacity)
+
+  def draw_right_intersection_arm(self, x, y, opacity):
+    center_x = self.board_to_screen_x(x)
+    center_y = self.board_to_screen_y(y)
+    mid_right_x = center_x + self.line_thickness/2
+    right_x = center_x + self.tile_radius
+    self.draw_intersection_line(mid_right_x, center_y, right_x, center_y, opacity)
+
+  def draw_intersection_line(self, start_x, start_y, end_x, end_y, opacity):
+    line = pyglet.shapes.Line(start_x, start_y, end_x, end_y, width = self.line_thickness)
+    line.color = color_scheme['line_rgb']
+    line.opacity = opacity
+    line.draw()
