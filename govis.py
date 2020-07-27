@@ -9,8 +9,7 @@ from model import Model
 from stochastic_board import StochasticBoard
 
 def main():
-  np.seterr(all = 'raise')
-  np.set_printoptions(threshold = np.inf)
+  configure_numpy()
   stochastic_board = StochasticBoard(board_size)
   model = make_model()
   neuron = get_neuron(model)
@@ -28,6 +27,10 @@ def main():
       window.flip()
   print(stochastic_board.probabilities())
   input("Press enter to close...")
+
+def configure_numpy():
+  np.seterr(all = 'raise')
+  np.set_printoptions(threshold = np.inf)
 
 def make_model():
   with open(model_parameters['config_path']) as f:
