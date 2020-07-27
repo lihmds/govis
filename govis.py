@@ -2,7 +2,7 @@ import json
 import numpy as np
 import tensorflow as tf
 import pyglet
-from graphics import BoardProbabilityDisplay
+from graphics import ProbabilityDisplay
 from parameters import *
 from board import Board
 from model import Model
@@ -14,18 +14,16 @@ def main():
   model = make_model()
   neuron = get_neuron(model)
   input_builder = InputBuilder(model)
-  window = pyglet.window.Window(window_size, window_size)
-  display = BoardProbabilityDisplay(board_size, window_size)
+  display = ProbabilityDisplay(board_size)
   with tf.compat.v1.Session() as session:
     restore_session(session)
     def objective_function(board):
       return apply_net_to_board(session, neuron, model, input_builder, board)
     for _ in range(hyperparameters['iteration_count']):
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
-      window.dispatch_events()
-      display.draw(stochastic_board.probabilities())
-      window.flip()
-  print(stochastic_board.probabilities())
+      probabilities = stochastic_board.probabilities()
+      display.update(probabilities)
+      print(probabilities, '\n\n')
   input("Press enter to close...")
 
 def configure_numpy():
