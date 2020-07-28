@@ -10,7 +10,7 @@ class ProbabilityDisplay:
   def __init__(self, window_size, board_size):
     self.window_size = window_size
     self.board_size = board_size
-    self.window = pyglet.window.Window(window_size, window_size)
+    self.window = ProbabilityDisplay.make_window(window_size)
     highest_probability_range = [1/len(board_colors), 1]
     self.highest_probability_to_opacity = interp1d(highest_probability_range, BoardForeground.opacity_range)
 
@@ -29,3 +29,11 @@ class ProbabilityDisplay:
         opacity = self.highest_probability_to_opacity(np.max(probabilities[x, y]))
         foreground.add_color(dominant_color, x, y, opacity)
     foreground.draw()
+
+  @staticmethod
+  def make_window(window_size):
+    try:
+      config = pyglet.gl.Config(sample_buffers = 1, samples = 4)
+      return pyglet.window.Window(window_size, window_size, config = config)
+    except pyglet.window.NoSuchConfigException:
+      return pyglet.window.Window(window_size, window_size)
