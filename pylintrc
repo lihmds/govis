@@ -1,0 +1,133 @@
+[MASTER]
+
+# Add files or directories to the blacklist. They should be base names, not
+# paths.
+ignore=board.py,model.py
+
+# Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
+# number of processors available to use.
+jobs=0
+
+# Pickle collected data for later comparisons.
+persistent=no
+
+# When enabled, pylint would attempt to guess common misconfiguration and emit
+# user-friendly hints instead of false-positive error messages.
+suggestion-mode=yes
+
+[MESSAGES CONTROL]
+
+disable=bad-whitespace,
+        missing-docstring,
+        import-error,
+        misplaced-comparison-constant,
+        no-else-return
+
+
+[REPORTS]
+
+# Set the output format. Available formats are text, parseable, colorized, json
+# and msvs (visual studio). You can also give a reporter class, e.g.
+# mypackage.mymodule.MyReporterClass.
+output-format=colorized
+
+# Tells whether to display a full report or only the messages.
+reports=no
+
+# Activate the evaluation score.
+score=no
+
+
+[REFACTORING]
+
+# Maximum number of nested blocks for function / method body
+max-nested-blocks=3
+
+
+[TYPECHECK]
+
+# This flag controls whether pylint should warn about no-member and similar
+# checks whenever an opaque object is returned when inferring. The inference
+# can return multiple potential results while evaluating a Python object, but
+# some branches might not be evaluated, which results in partial inference. In
+# that case, it might be useful to still emit no-member and other checks for
+# the rest of the inferred objects.
+ignore-on-opaque-inference=no
+
+# The total number of similar names that should be taken in consideration when
+# showing a hint for a missing member.
+missing-member-max-choices=2
+
+
+[STRING]
+
+# This flag controls whether inconsistent-quotes generates a warning when the
+# character used as a quote delimiter is used inconsistently within a module.
+check-quote-consistency=yes
+
+
+[FORMAT]
+
+# Expected format of line ending, e.g. empty (any line ending), LF or CRLF.
+expected-line-ending-format=LF
+
+# Number of spaces of indent required inside a hanging or continued line.
+indent-after-paren=2
+
+# String used as indentation unit. This is usually "    " (4 spaces) or "\t" (1
+# tab).
+indent-string='  '
+
+# Maximum number of characters on a single line.
+max-line-length=130
+
+# Maximum number of lines in a module.
+max-module-lines=300
+
+# List of optional constructs for which whitespace checking is disabled. `dict-
+# separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
+# `trailing-comma` allows a space between comma and closing bracket: (a, ).
+# `empty-line` allows space-only lines.
+no-space-check=
+
+
+[BASIC]
+
+# Naming style matching correct constant names.
+const-naming-style=snake_case
+
+# Good variable names which should always be accepted, separated by a comma.
+good-names=i,_,x,y,f
+
+
+[DESIGN]
+
+# Maximum number of arguments for function / method.
+max-args=6
+
+# Maximum number of attributes for a class (see R0902).
+max-attributes=6
+
+# Maximum number of boolean expressions in an if statement (see R0916).
+max-bool-expr=3
+
+# Maximum number of branch for function / method body.
+max-branches=4
+
+# Maximum number of locals for function / method body.
+max-locals=12
+
+# Maximum number of parents for a class (see R0901).
+max-parents=2
+
+# Maximum number of public methods for a class (see R0904).
+max-public-methods=20
+
+# Maximum number of return / yield for function / method body.
+max-returns=4
+
+# Maximum number of statements in function / method body.
+max-statements=30
+
+# Minimum number of public methods for a class (see R0903).
+min-public-methods=0

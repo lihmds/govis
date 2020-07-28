@@ -4,8 +4,10 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
+pylint = "~= 2.5"
 
 [packages]
 tensorflow = "~= 1.15"
 numpy = "~= 1.19"
 scipy = "~= 1.5"
+pyglet = "~= 1.5"

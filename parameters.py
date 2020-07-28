@@ -1,5 +1,5 @@
 import os
-from input import FullInputBuilder, QuickInputBuilder
+from input import FullInputBuilder
 from board import Board
 
 board_size = 19
@@ -19,7 +19,6 @@ neuron_location = {
   'y': 0
 }
 hyperparameters = {
-  'iteration_count': 50,
   'rate': 0.5,
   'sample_size': 20
 }

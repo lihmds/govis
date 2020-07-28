@@ -1,25 +1,35 @@
 import json
+import itertools
 import numpy as np
 import tensorflow as tf
 from parameters import board_size, katago_color, InputBuilder, model_parameters, neuron_location, hyperparameters, rules
-from board import Board
+from probability_display import ProbabilityDisplay
 from model import Model
 from stochastic_board import StochasticBoard
 
 def main():
-  np.seterr(all = 'raise')
+  configure_numpy()
   stochastic_board = StochasticBoard(board_size)
   model = make_model()
   neuron = get_neuron(model)
   input_builder = InputBuilder(model)
+  display = ProbabilityDisplay(800, board_size)
   with tf.compat.v1.Session() as session:
     restore_session(session)
     def objective_function(board):
       return apply_net_to_board(session, neuron, model, input_builder, board)
-    for _ in range(hyperparameters['iteration_count']):
+    for i in itertools.count():
+      print('iteration', i)
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
-      print(stochastic_board.generate_board().to_string(), '\n\n')
-    print(stochastic_board.entropies())
+      display.update(stochastic_board.probabilities())
+      if display.has_closed():
+        break
+  print('probabilities:\n')
+  print(stochastic_board.probabilities())
+
+def configure_numpy():
+  np.seterr(all = 'raise')
+  np.set_printoptions(threshold = np.inf)
 
 def make_model():
   with open(model_parameters['config_path']) as f:
