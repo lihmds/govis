@@ -10,7 +10,7 @@ At present the program focuses on [KataGo](https://github.com/lightvector/KataGo
 
 1. Clone this repository with `git clone https://github.com/lihmds/govis.git`.
 2. [Install pipenv](https://pipenv.pypa.io/en/latest/install/#installing-pipenv) if necessary. One way is `pip3 install --user pipenv`.
-3. Take care of the dependencies with `pipenv install --three`.
+3. Take care of the dependencies with `pipenv install --three --dev`.
 
 # Running
 
