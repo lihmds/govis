@@ -6,18 +6,18 @@ from stochastic_board import StochasticBoard
 from board_graphics import BoardBackground, BoardPainter
 
 class ProbabilityDisplay:
-  def __init__(self, board_size):
-    window_size = 800
+  def __init__(self, window_size, board_size):
+    self.window_size = window_size
     self.board_size = board_size
     self.window = pyglet.window.Window(window_size, window_size)
-    self.background = BoardBackground(window_size)
     self.painter = BoardPainter(window_size, board_size)
     highest_probability_range = [1/len(StochasticBoard.colors), 1]
     self.highest_probability_to_opacity = interp1d(highest_probability_range, BoardPainter.opacity_range)
 
   def update(self, probabilities):
     self.window.dispatch_events()
-    self.background.draw()
+    background = BoardBackground(self.window_size)
+    background.draw()
     self.draw_tiles(probabilities)
     self.window.flip()
 
