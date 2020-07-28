@@ -12,6 +12,8 @@ class ProbabilityDisplay:
     self.window = pyglet.window.Window(window_size, window_size)
     self.background = BoardBackground(window_size)
     self.painter = BoardPainter(window_size, board_size)
+    highest_probability_range = [1/len(StochasticBoard.colors), 1]
+    self.highest_probability_to_opacity = interp1d(highest_probability_range, BoardPainter.opacity_range)
 
   def update(self, probabilities):
     self.window.dispatch_events()
@@ -27,7 +29,7 @@ class ProbabilityDisplay:
     self.painter.end_batch()
 
   def draw_tile(self, x, y, probabilities):
-    opacity = self.calculate_opacity(np.max(probabilities))
+    opacity = self.highest_probability_to_opacity(np.max(probabilities))
     dominant_color = np.argmax(probabilities)
     if dominant_color == Board.EMPTY:
       self.painter.draw_intersection(x, y, opacity)
@@ -37,8 +39,3 @@ class ProbabilityDisplay:
       self.painter.draw_white_stone(x, y, opacity)
     else:
       assert False
-
-  def calculate_opacity(self, highest_probability):
-    highest_probability_range = [1/len(StochasticBoard.colors), 1]
-    interpolate = interp1d(highest_probability_range, BoardPainter.opacity_range)
-    return interpolate(highest_probability)
