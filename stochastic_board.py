@@ -12,10 +12,10 @@ class StochasticBoard:
   def __init__(self, size):
     '''Create a board with uniform distributions everywhere.'''
     self.size = size
-    self.logits = np.zeros(shape = [size, size, len(board_colors)], dtype = datatypes.float)
+    self.logits = np.zeros(shape = [size, size, len(board_colors)], dtype = datatypes.numpy_float)
 
   def probabilities(self):
-    '''Return the distributions of all intersections as a size × size × 3 array.
+    '''Return the distributions of all intersections as an array with shape [size, size, 3].
     Indexed as array[x, y, color].'''
     relative_probabilities = np.exp(self.logits)
     return relative_probabilities / relative_probabilities.sum(axis = 2, keepdims = True)
@@ -69,7 +69,7 @@ class EvaluationTable:
 
   def local_averages(self, average_of_empty):
     old_settings = np.seterr(invalid = 'ignore')
-    averages = np.zeros(shape = [self.size, self.size, len(board_colors)], dtype = datatypes.float)
+    averages = np.zeros(shape = [self.size, self.size, len(board_colors)], dtype = datatypes.numpy_float)
     for x in range(self.size):
       for y in range(self.size):
         for color in board_colors:

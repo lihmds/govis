@@ -1,7 +1,6 @@
 from scipy.interpolate import interp1d
 import numpy as np
 import pyglet
-from board import Board
 from board_colors import board_colors
 from board_graphics import BoardBackground, BoardForeground
 

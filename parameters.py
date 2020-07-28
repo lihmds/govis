@@ -1,5 +1,5 @@
 import os
-from input import FullInputBuilder, QuickInputBuilder
+from input import FullInputBuilder
 from board import Board
 
 board_size = 19

@@ -2,10 +2,8 @@ import json
 import itertools
 import numpy as np
 import tensorflow as tf
-import pyglet
-from parameters import *
+from parameters import board_size, katago_color, InputBuilder, model_parameters, neuron_location, hyperparameters, rules
 from probability_display import ProbabilityDisplay
-from board import Board
 from model import Model
 from stochastic_board import StochasticBoard
 
