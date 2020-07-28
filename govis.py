@@ -22,6 +22,8 @@ def main():
     for _ in range(hyperparameters['iteration_count']):
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
       display.update(stochastic_board.probabilities())
+      if display.has_closed():
+        break
   print(stochastic_board.probabilities(), '\n\n')
   input("Press enter to close...")
 

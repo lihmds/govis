@@ -14,6 +14,9 @@ class ProbabilityDisplay:
     highest_probability_range = [1/len(board_colors), 1]
     self.highest_probability_to_opacity = interp1d(highest_probability_range, BoardForeground.opacity_range)
 
+  def has_closed(self):
+    return self.window.has_exit
+
   def update(self, probabilities):
     self.window.dispatch_events()
     background = BoardBackground(self.window_size)
@@ -34,6 +37,11 @@ class ProbabilityDisplay:
   def make_window(window_size):
     try:
       config = pyglet.gl.Config(sample_buffers = 1, samples = 4)
-      return pyglet.window.Window(window_size, window_size, config = config)
+      window = pyglet.window.Window(window_size, window_size, config = config)
     except pyglet.window.NoSuchConfigException:
-      return pyglet.window.Window(window_size, window_size)
+      window = pyglet.window.Window(window_size, window_size)
+    def on_close():
+      window.has_exit = True
+      window.close()
+    window.on_close = on_close
+    return window
