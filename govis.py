@@ -1,4 +1,5 @@
 import json
+import itertools
 import numpy as np
 import tensorflow as tf
 import pyglet
@@ -19,13 +20,14 @@ def main():
     restore_session(session)
     def objective_function(board):
       return apply_net_to_board(session, neuron, model, input_builder, board)
-    for _ in range(hyperparameters['iteration_count']):
+    for i in itertools.count():
+      print('iteration', i)
       stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
       display.update(stochastic_board.probabilities())
       if display.has_closed():
         break
-  print(stochastic_board.probabilities(), '\n\n')
-  input("Press enter to close...")
+  print('probabilities:\n')
+  print(stochastic_board.probabilities())
 
 def configure_numpy():
   np.seterr(all = 'raise')

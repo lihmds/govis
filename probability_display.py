@@ -3,7 +3,6 @@ import numpy as np
 import pyglet
 from board import Board
 from board_colors import board_colors
-from stochastic_board import StochasticBoard
 from board_graphics import BoardBackground, BoardForeground
 
 class ProbabilityDisplay:
