@@ -1,18 +1,17 @@
 import random
 import itertools
 import numpy as np
-import datatypes
+from datatypes import NumpyFloat
 from board import Board
 from board_colors import board_colors
 
-'''A square board with a probability distribution instead of a fixed color at each intersection.
-All arrays here are indexed like array[x, y] (column-major).'''
-
 class StochasticBoard:
+  '''A square board with a probability distribution instead of a fixed color at each intersection.'''
+
   def __init__(self, size):
     '''Create a board with uniform distributions everywhere.'''
     self.size = size
-    self.logits = np.zeros(shape = [size, size, len(board_colors)], dtype = datatypes.numpy_float)
+    self.logits = np.zeros(shape = [size, size, len(board_colors)], dtype = NumpyFloat)
 
   def probabilities(self):
     '''Return the distributions of all intersections as an array with shape [size, size, 3].
@@ -69,7 +68,7 @@ class EvaluationTable:
 
   def local_averages(self, average_of_empty):
     old_settings = np.seterr(invalid = 'ignore')
-    averages = np.zeros(shape = [self.size, self.size, len(board_colors)], dtype = datatypes.numpy_float)
+    averages = np.zeros(shape = [self.size, self.size, len(board_colors)], dtype = NumpyFloat)
     for x in range(self.size):
       for y in range(self.size):
         for color in board_colors:

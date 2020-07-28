@@ -1,5 +1,5 @@
 import numpy as np
-import datatypes
+from datatypes import NumpyFloat
 from board import Board
 
 class FullInputBuilder:
@@ -10,7 +10,7 @@ class FullInputBuilder:
 
   def build_channels(self, board, own_color, rules):
     opponent_color = Board.get_opp(own_color)
-    channels = np.zeros(shape = [self.channel_size * self.channel_size, 22], dtype = datatypes.numpy_float)
+    channels = np.zeros(shape = [self.channel_size * self.channel_size, 22], dtype = NumpyFloat)
     self.build_whole_board_channel(channels[:, 0], board)
     self.build_stone_channel(channels[:, 1], board, own_color)
     self.build_stone_channel(channels[:, 2], board, opponent_color)
@@ -72,7 +72,7 @@ class FullInputBuilder:
 
   def build_globals(self, board, own_color, rules):
     own_komi = (rules['whiteKomi'] if own_color == Board.WHITE else -rules['whiteKomi'])
-    globals = np.zeros(shape = [19], dtype = datatypes.numpy_float)
+    globals = np.zeros(shape = [19], dtype = NumpyFloat)
     # globals 0-4 are skipped - board history is ignored
     globals[5] = own_komi / 20.0
     assert rules['koRule'] == 'KO_SIMPLE' # for globals 6, 7
