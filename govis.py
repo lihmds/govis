@@ -2,8 +2,8 @@ import json
 import numpy as np
 import tensorflow as tf
 import pyglet
-from graphics import ProbabilityDisplay
 from parameters import *
+from probability_display import ProbabilityDisplay
 from board import Board
 from model import Model
 from stochastic_board import StochasticBoard
