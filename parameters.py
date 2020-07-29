@@ -1,10 +1,10 @@
 import os
-from input import FullInputBuilder
+import input_builders
 from board import Board
 
 board_size = 19
 katago_color = Board.BLACK
-InputBuilder = FullInputBuilder
+InputBuilder = input_builders.FullInputBuilder
 network_path = 'nets/g170-b6c96-s175395328-d26788732'
 model_parameters = {
   'variables_prefix': os.path.join(network_path, 'saved_model/variables/variables'),
