@@ -19,12 +19,6 @@ class StochasticBoard:
     relative_probabilities = np.exp(self.logits)
     return relative_probabilities / relative_probabilities.sum(axis = 2, keepdims = True)
 
-  def ascend_gradient(self, objective_function, rate, sample_size):
-    '''Adjust the probabilities so that the expected value of objective_function grows.'''
-    sample = [self.generate_board() for _ in range(sample_size)]
-    gradient = self.estimate_gradient(objective_function, sample)
-    self.logits += rate * gradient
-
   def generate_board(self):
     '''Generate a board which approximately follows self.probabilities().
     Captures and suicides are not prevented during the generation.
@@ -38,17 +32,29 @@ class StochasticBoard:
           board.play(color, board.loc(x, y))
     return board
 
-  def generate_color(self, x, y):
-    relative_probabilities = np.exp(self.logits[x, y])
-    return random.choices(population = board_colors, weights = relative_probabilities)[0]
+  def ascend_gradient(self, objective_function, rate, sample_size):
+    '''Adjust the probabilities so that the expected value of objective_function grows.
+    Return an estimate of the previous expected value of objective_function.'''
+    evaluations = self.generate_evaluations(objective_function, sample_size)
+    gradient = self.estimate_gradient(evaluations)
+    self.logits += rate * gradient
+    return evaluations.global_average()
 
-  def estimate_gradient(self, objective_function, sample):
+  def generate_evaluations(self, objective_function, sample_size):
     evaluations = EvaluationTable(self.size)
-    for board in sample:
+    for _ in range(sample_size):
+      board = self.generate_board()
       evaluations.add_board(board, objective_function(board))
+    return evaluations
+
+  def estimate_gradient(self, evaluations):
     overall_evaluation = evaluations.global_average()
     local_evaluations = evaluations.local_averages(average_of_empty = overall_evaluation)
     return self.probabilities() * (local_evaluations - overall_evaluation)
+
+  def generate_color(self, x, y):
+    relative_probabilities = np.exp(self.logits[x, y])
+    return random.choices(population = board_colors, weights = relative_probabilities)[0]
 
 class EvaluationTable:
   def __init__(self, size):
@@ -64,7 +70,9 @@ class EvaluationTable:
         self.table[x][y][color].append(evaluation)
 
   def global_average(self):
-    return np.mean(list(itertools.chain.from_iterable(self.table[0][0])))
+    evaluations_by_first_color = self.table[0][0]
+    all_evaluations = list(itertools.chain.from_iterable(evaluations_by_first_color))
+    return np.mean(all_evaluations)
 
   def local_averages(self, average_of_empty):
     old_settings = np.seterr(invalid = 'ignore')

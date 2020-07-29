@@ -20,7 +20,9 @@ def main():
       return apply_net_to_board(session, neuron, model, input_builder, board)
     for i in itertools.count():
       print('iteration', i)
-      stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'], hyperparameters['sample_size'])
+      previous_evaluation = stochastic_board.ascend_gradient(objective_function, hyperparameters['rate'],
+                                                             hyperparameters['sample_size'])
+      print('evaluation', previous_evaluation)
       display.update(stochastic_board.probabilities())
       if display.has_closed():
         break
