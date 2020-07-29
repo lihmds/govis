@@ -49,10 +49,13 @@ def restore_session(session):
 
 def apply_net_to_board(session, output, model, input_builder, board):
   return session.run(output, feed_dict = {
-    model.bin_inputs: input_builder.build_channels(board, katago_color, rules),
-    model.global_inputs: input_builder.build_globals(board, katago_color, rules),
+    model.bin_inputs: prepend_dimension(input_builder.build_channels(board, katago_color, rules)),
+    model.global_inputs: prepend_dimension(input_builder.build_globals(board, katago_color, rules)),
     model.symmetries: [False, False, False],
     model.include_history: [[0.0, 0.0, 0.0, 0.0, 0.0]]
   })
+
+def prepend_dimension(array):
+  return np.expand_dims(array, 0)
 
 main()

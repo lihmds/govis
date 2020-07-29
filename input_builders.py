@@ -26,7 +26,7 @@ class FullInputBuilder:
     channels[:, 16] = channels[:, 14]
     self.build_pass_alive_area_channels(channels[:, 18], channels[:, 19], board, own_color, rules)
     # channels 20, 21 are skipped - the encore is ignored
-    return prepend_dimension(channels)
+    return channels
 
   def build_whole_board_channel(self, channel, board):
     self.build_channel_from_function(channel, board, lambda _: True)
@@ -83,7 +83,7 @@ class FullInputBuilder:
     # globals 15, 16 are skipped - playout doubling advantage is ignored
     # global 17 is skipped - button go is ignored
     global_inputs[18] = FullInputBuilder.komi_triangle_wave(own_komi, board.size)
-    return prepend_dimension(global_inputs)
+    return global_inputs
 
   @staticmethod
   def komi_triangle_wave(own_komi, board_size):
@@ -101,6 +101,3 @@ class QuickInputBuilder(FullInputBuilder):
 
   def build_pass_alive_area_channels(self, *_):
     pass
-
-def prepend_dimension(array):
-  return np.expand_dims(array, 0)
