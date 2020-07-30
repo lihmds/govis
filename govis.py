@@ -13,7 +13,7 @@ def main():
   model = make_model()
   neuron = get_neuron(model)
   input_builder = InputBuilder(model)
-  display = ProbabilityDisplay(800, board_size)
+  display = ProbabilityDisplay(800, board_size, stochastic_board.probabilities())
   with tf.compat.v1.Session() as session:
     restore_session(session)
     def objective_function(board):

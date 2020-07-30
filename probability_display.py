@@ -5,12 +5,13 @@ from board_colors import board_colors
 from board_graphics import BoardBackground, BoardForeground
 
 class ProbabilityDisplay:
-  def __init__(self, window_size, board_size):
+  def __init__(self, window_size, board_size, initial_probabilities):
     self.window_size = window_size
     self.board_size = board_size
     self.window = ProbabilityDisplay.make_window(window_size)
     highest_probability_range = [1/len(board_colors), 1]
     self.highest_probability_to_opacity = interp1d(highest_probability_range, BoardForeground.opacity_range)
+    self.update(initial_probabilities)
 
   def has_closed(self):
     return self.window.has_exit
